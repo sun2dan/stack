@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>format 函数</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        body {padding: 0 15px 30px;}
+        ul { list-style: none; }
+        h4 {font-size: 22px;padding: 20px 0; font-weight: bold;}
+        h5 {font-size: 18px; margin-bottom: 15px;}
+        h6 {font-size: 14px; padding-bottom: 5px;}
+        .mb20 {margin-bottom: 20px;}
+        img { border-radius: 50%; margin-right: 10px; }
+        .left-cell, .right-cell { display: inline-block; vertical-align: middle; }
+        .left-cell img { width: 50px; height: 50px; }
+        pre {padding: 15px 0; line-height: 1.6;background-color: #222; color: #d3d3d3; font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;}
+        table {background-color: #e4e4e4;line-height: 1.5; margin-bottom: 30px;}
+        td {background-color: #fff;}
+        th {background-color: #f0f0f0; }
+        td, th {padding: 6px 10px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h4>demo: （F12看源码）</h4>
+    <ul id="box1">
+    </ul>
+</div>
+
+<!-- 基础format 用法 -->
+<h4>基础 format 函数版用法：</h4>
+<pre class="brush: js; ">
+    format("{a}-{b}-{c}", {a:1990, b:3, c:5})   //"1990-3-5"
+    format("{0}-{1}-{2}", 1990,3,5)            //"1990-3-5"
+</pre>
+
+
+<h4>升级版 format 用法</h4>
+<h5>1、最常用</h5>
+<table cellspacing="1" cellpadding="1">
+    <tr>
+        <th>参数</th>
+        <th>说明</th>
+    </tr>
+    <tr>
+        <td>string</td>
+        <td>要格式化的字符串</td>
+    </tr>
+    <tr>
+        <td>
+            <p>object /</p>
+            <p>依次要替换的值</p>
+        </td>
+        <td>
+            <p>object对应 "{字符串}"-"{a}" 的形式，{}之间的值为object的属性名称；</p>
+            <p>单个值对应"{数字}"的形式，数字表示下标；第二个参数替换下标为0的占位符，以此类推</p>
+        </td>
+    </tr>
+</table>
+<h5>2、如果{}占位符有冲突，可以自定义</h5>
+<table cellspacing="1" cellpadding="1">
+    <tr>
+        <th>参数</th>
+        <th>说明</th>
+    </tr>
+    <tr>
+        <td>array</td>
+        <td>占位符的前后标识，[前标识, 后标识]，如果只传入了一个，重置为默认的["{", "}"]</td>
+    </tr>
+    <tr>
+        <td>string</td>
+        <td>要格式化的字符串</td>
+    </tr>
+    <tr>
+        <td>
+            <p>object /</p>
+            <p>依次要替换的值</p>
+        </td>
+        <td>
+            <p>object对应 "{字符串}"-"{a}" 的形式</p>
+            <p>单个值对应"{数字}"的形式，数字表示下标；第二个参数替换下标为0的占位符，以此类推</p>
+        </td>
+    </tr>
+</table>
+<h5>3、2的特殊情况，采用双{}来占位，{{下标或属性}}</h5>
+<table cellspacing="1" cellpadding="1">
+    <tr>
+        <th>参数</th>
+        <th>说明</th>
+    </tr>
+    <tr>
+        <td>boolean</td>
+        <td>是否采用双大括号的形式，true时采用，false<span>为默认的</span>
+            <span>["{", "}"</span>
+            <span>]</span>
+        </td>
+    </tr>
+    <tr>
+        <td>string</td>
+        <td>要格式化的字符串</td>
+    </tr>
+    <tr>
+        <td>
+            <p>object /</p>
+            <p>依次要替换的值</p>
+        </td>
+        <td>
+            <p>object对应 "{字符串}"-"{a}" 的形式</p>
+            <p>单个值对应"{数字}"的形式，数字表示下标；第二个参数替换下标为0的占位符，以此类推</p>
+        </td>
+    </tr>
+</table>
+<h5>示例：</h5>
+<pre class="brush: js; ">
+    format("{a}-{b}-{c}", {a:1990, b:3, c:5})   		 //"1990-3-5"
+    format("{0}-{1}-{2}", 1990,3,5)             		 //"1990-3-5"
+
+    format(["$[", "]$"], "$[a]$-$[b]$-$[c]$", {a:1990, b:3, c:5})   //"1990-3-5"
+    format(["$[", "]$"], "$[0]$-$[1]$-$[2]$", 1990,3,5)             //"1990-3-5"
+
+    format(true, "{{0}}-{{1}}-{{2}}", 1990,3,5)                     //"1990-3-5"
+    format(true, "{{a}}-{{b}}-{{c}}", {a:1990, b:3, c:5})           //"1990-3-5"
+</pre>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+    /*
+     原型版
+     占位符为{}，太过简单，可以设计的复杂些，比如 {{ }} 什么的
+     匹配到数字就按照数组处理，没有匹配到就按照对象处理，所以对象的属性名不能是数字
+     */
+    String.prototype.format = function () {
+        var pattern = /\{([\w\-_]+)\}/gm;
+        var args = /\{(\d+)\}/.test(this) ? arguments : arguments[0];
+        var format = this.replace(pattern, function () {
+            return args[arguments[1]];
+        });
+        return format;
+    };
+
+    // 函数版
+    function format(str) {
+        var pattern = /\{([\w\-_]+)\}/gm;
+        var arr = Array.prototype.slice.call(arguments, 1);
+        var args = /\{(\d+)\}/.test(str) ? arr : arr[0];
+        var formatStr = str.replace(pattern, function () {
+            return args[arguments[1]];
+        });
+        return formatStr;
+    }
+
+    console.log("简版 format");
+
+    console.group();
+    console.log(format("{1}-{0}={2}", "3", "5", "2"));
+    console.log(format("{one}-{two}={three}", {one: 5, two: 3, three: 2}));
+    console.groupEnd();
+
+    $(function () {
+        demo1();
+    });
+
+    // 通过对象传值
+    function demo1() {
+        var dataArr = [{
+            name: "简一",
+            remarks: " 金融MBA,CFA,80后新锐基金经理的代表人物之1",
+            icon_path: "https://tse1-mm.cn.bing.net/th?id=OIP.xdNvXAXavt6avL6GaQt7TwHaHa&p=0&o=5&pid=1.1"
+        }, {
+            name: "小明三",
+            remarks: "价值精选股票型证券投资基金华商价值精选股票型证券投资基金",
+            icon_path: "https://tse4-mm.cn.bing.net/th?id=OIP.qYHVuT-GFJJ6cOBDwklJ-gHaHa&w=300&h=300&p=0&o=5&pid=1.7"
+        }, {
+            name: "黄平二",
+            remarks: "合伙人兼总经理北京科技大学工学学士，擅长权益类、债券类、套利类资",
+            icon_path: "https://tse1-mm.cn.bing.net/th?id=OIP.7_p1lNenHWDGniADbIAxewHaHa&w=300&h=300&p=0&o=5&pid=1.7"
+        }];
+
+        var template = $("#template_1").html();
+        var str = "";
+        for (var i = 0, len = dataArr.length; i < len; i++) {
+            str += template.format(dataArr[i]);
+        }
+        $("#box1").append(str);
+    }
+</script>
+
+<!-- template1 -->
+<script type="text/template" id="template_1">
+    <li class="mb20">
+        <div class="left-cell">
+            <img src="{icon_path}"/>
+        </div>
+        <div class="right-cell">
+            <h6>{name}</h6>
+            <p>{remarks}</p>
+        </div>
+    </li>
+</script>
+<!--/ template1 -->
+
+<script>
+    // format 函数升级版，实际用的时候还是简版的好用；就是简单的替换个字符串，没必要搞这么复杂
+    console.log("升级版 format");
+
+    function format(str) {
+        if (arguments.length < 2) {
+            console.error("参数个数不够");
+            return;
+        }
+        var typeArr = ["array", "boolean", "string"];
+        var type = getType(str), arr;
+        var inputStr = "", pattern, args = {};
+
+        if (type === typeArr[0] || type === typeArr[1]) {        // 特殊情况
+            if (arguments.length < 3) {
+                console.error("参数个数不够");
+                return;
+            }
+            var ms = ["{", "}"];
+            if (type === typeArr[1] && str === true) {
+                ms = ["{{", "}}"];
+            } else if (type === typeArr[0]) {
+                ms = str;
+                ms.length !== 2 && (ms = ["{", "}"]);
+                ms[0] = "\\" + ms[0].split("").join("\\");
+                ms[1] = "\\" + ms[1].split("").join("\\");
+            }
+            inputStr = arguments[1];    // 输入的字符串
+            pattern = new RegExp(ms[0] + "([\\w\\-_]+)" + ms[1], "gmi");
+            arr = Array.prototype.slice.call(arguments, 2);
+            args = new RegExp(ms[0] + "(\\d+)" + ms[1], "").test(inputStr) ? arr : arr[0];
+        } else if (type === typeArr[2]) {       // 普通情况
+            inputStr = str;
+            pattern = /\{([\w\-_]+)\}/gm;
+            arr = Array.prototype.slice.call(arguments, 1);
+            args = /\{(\d+)\}/.test(str) ? arr : arr[0];
+        } else {
+            console.error("请检查传入参数，第一个参数类型不正确");
+            return;
+        }
+        var formatStr = inputStr.replace(pattern, function () {
+            return args[arguments[1]] + "";
+        });
+        return formatStr;
+    }
+</script>
+
+</body>
+</html>

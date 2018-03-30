@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>获取 url 参数</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        body {font-size: 30px; padding: 20px;}</style>
+</head>
+<body>
+
+<div class="page">
+    F12
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    console.log("在url后边添加参数查看效果");
+
+    function getQuery() {
+        var str = location.search;
+        var obj = {};
+        if (!str) {
+            console.log("当前url上没有参数");
+            return obj;
+        }
+        str.replace(/([\w\d_\-%]+)=([\w\d\/%.\-_:#]+)(\b|&|$)/gmi, function (m1, group1, group2, index, input) {
+            obj[group1] = decodeURIComponent(group2);
+        });
+        return obj;
+    }
+
+    console.log(getQuery());
+</script>
+</body>
+</html>
