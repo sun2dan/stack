@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>环形进度条 - 动态进度+静态元素</title>
+    <link href="../../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        .chart { width: 300px; height: 300px; }
+    </style>
+</head>
+<body>
+
+<div class="chart pr">
+    <canvas></canvas>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    main();
+
+    function main() {
+        // 单色和渐变
+        // var colors = ["#50E3C2", "#FF57CE", "#A46EFF"];
+        // var colorArr = [["#f1cd8c", "#d1b071"], ["#d2b071", "#fff3cd"], ["#A02EE6 ", "#8932E8"]];
+        var colorArr = ["#f1cd8c", "#d2b071"];
+
+        var requestAni = window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                return setTimeout(callback, 1000 / 60);
+            };
+        var cancelAni = window.cancelAnimationFrame ||
+            window.webkitCancelAnimationFrame ||
+            window.mozCancelAnimationFrame ||
+            window.oCancelAnimationFrame ||
+            window.msCancelAnimationFrame ||
+            function (ani) {
+                clearTimeout(ani);
+            };
+
+        var $chart = $(".chart");
+        var w = $chart.width();
+        var he = $chart.height();
+        var linew = 30;
+        var circle = {x: w, y: he, r: .74 * w};
+        var ctx = null;
+        var canvas = null;
+        var innerR = .58 * w;
+
+        var startArc = -5 / 8 * 2 * Math.PI;
+        var endArc = 2 / 8 * Math.PI;
+        var endArcFront = 1 / 8 * Math.PI;
+        var interval = 0.05; // 间隔
+
+        init();
+
+        function init() {
+            var $canvas = $chart.find("canvas");
+            canvas = $canvas.get(0);
+            $canvas.css({width: w, height: he});
+            canvas.width = w * 2;
+            canvas.height = he * 2;
+            ctx = canvas.getContext("2d");
+            draw();
+        }
+
+        //
+        function draw() {
+            var index = 0;
+            var myReq = requestAni(step);
+
+            function step() {
+                index++;
+                var cur = startArc + index * interval;
+                if (cur >= endArcFront) {
+                    cancelAni(myReq);
+                    drawSingle(endArcFront);
+                    return;
+                }
+                drawSingle(cur);
+                myReq = requestAni(step);
+            }
+        }
+
+        function drawSingle(end) {
+            clear();
+            drawBg();
+            drawCircle();
+            drawMain(end);
+        }
+
+        function drawBg() {
+            // 背景
+            ctx.save();
+            ctx.lineWidth = linew;
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.r + linew / 2, startArc, endArc, false);
+
+            ctx.strokeStyle = "#faf8f5";
+            ctx.lineCap = "round";
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = "rgba(0,0,0,.3)";
+            ctx.shadowOffsetX = 0; // 阴影Y轴偏移
+            ctx.shadowOffsetY = 10; // 阴影X轴偏移
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 画中间的圆
+        function drawCircle() {
+            ctx.save();
+            ctx.lineWidth = linew;
+            ctx.beginPath();
+            var x = circle.x;
+            var y = circle.y;
+            ctx.arc(x, y, innerR, 0, 2 * Math.PI, false);
+            var grad = ctx.createLinearGradient(x, y - innerR, x, y + innerR);
+            grad.addColorStop(0, "#fff");
+            grad.addColorStop(1, "#f2ece4");
+            ctx.fillStyle = grad;//"#fdfcfb";
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = "rgba(219, 186, 122, .5)";
+            ctx.shadowOffsetX = 0; // 阴影Y轴偏移
+            ctx.shadowOffsetY = 15; // 阴影X轴偏移
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawMain(end) {
+            ctx.save();
+            ctx.lineWidth = linew;
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.r + linew / 2, startArc, end, false);
+            var x = circle.x - circle.r;
+            var grad = ctx.createLinearGradient(x, circle.y - circle.r, (circle.x + circle.r) / 2, circle.y + circle.r);
+            grad.addColorStop(0, colorArr[1]);
+            grad.addColorStop(1, colorArr[0]);
+            ctx.strokeStyle = grad;
+            ctx.lineCap = "round";
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function clear() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+</script>
+</body>
+</html>

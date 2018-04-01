@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="icon" href="//www.jd.com/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="//static.360buyimg.com/finance/mobile/base/cm/1.0.0/reset.css">
+    <style type="text/css">
+        div { width: 50px; height: 50px; background-color: #ccc; }
+    </style>
+</head>
+<body>
+
+<div></div>
+<script src="//static.360buyimg.com/finance/mobile/base/1.0.0/js/lib/??zepto-1.1.4.js,fastclick.js"></script>
+<script>
+    "use strict";
+
+    var div = document.querySelector("div");
+
+    var y = 0;
+
+    function getStep(totalstep, duration, t, dt, timing) {
+        return totalstep / duration * timing(t / duration) * dt;
+    }
+
+    function movement(t, dt) {
+        var to = 1000,
+            duration = 707; // milliseconds
+        y += getStep(to, duration, t, dt, function (t) {
+            return 2 * t
+        });
+        y = Math.min(y, to);
+        div.style.transform = "translate3d(0, " + y + "px, 0)";
+        console.log(t);
+        return (y) < to;
+    }
+
+
+    requestAnimationFrame(function (t) {
+        var t0 = t, t1 = 0;
+        console.debug(t, "==============");
+        requestAnimationFrame(function frame(t) {
+            movement(t - t0, -t1 + (t1 = t)) && requestAnimationFrame(frame);
+        });
+    });
+</script>
+</body>
+</html>

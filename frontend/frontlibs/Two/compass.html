@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>Two - 根据陀螺仪移动元素</title>
+    <link href="../../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        #result { position: fixed; bottom: 0; z-index: 20; width: 100%; height: 60px; background-color: rgba(0, 0, 0, .6); color: #fff; }
+        #result div { z-index: 20; width: 50%; height: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="draw-shapes"></div>
+
+<div id="result">
+    <div class="left-box abs-lt"><br/>移动端查看</div>
+    <div class="right-box abs-rt"></div>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/two.js/0.7.0-alpha.1/two.min.js"></script>
+<script type="text/javascript">
+    /**
+     本来想做一个指南针……   
+     * */
+    var Page = {
+        init: function () {
+            this.pageInit();
+            this.twoCanvasInit();
+        },
+        pageInit: function () {
+
+        },
+
+        //two的canvas应用
+        twoCanvasInit: function () {
+            var wW = $(window).width();
+            var wH = $(window).height();
+            var alpha = 0;
+            var beta = 0;
+            var gamma = 0;
+
+            var $right = $("#result").find(".right-box");
+
+            window.ondeviceorientation = function (event) {
+                alpha = event.alpha;
+                beta = event.beta;
+                gamma = event.gamma;
+                if (alpha) alpha = +alpha.toFixed(2);
+                if (beta) beta = +beta.toFixed(2);
+                if (gamma) gamma = +gamma.toFixed(2);
+            };
+
+            var two = new Two({
+                type: Two.Types["canvas"],
+                fullscreen: true,
+                autostart: true
+            }).appendTo(document.body);
+
+            var gravity = null;
+            var r = 50;
+            var x = 0;
+            var y = 0;
+
+            var line = two.makeLine(x, -r, x, r);
+            line.stroke = "#f00";
+            line.lineWidth = 2;
+
+            // 字母N
+            var styles = {
+                family: 'proxima-nova, sans-serif',
+                size: 16,
+                leading: 50,
+                weight: 900
+            };
+            var n = two.makeText("N", -r / 4, -r / 4 * 3, styles);
+            n.fill = "#f00";
+
+            var star = two.makeStar(x, y, r, 10, 4);
+            star.rotation = -.394;
+            star.opacity = .5;
+
+            var colors = ["#fff", "#000", "#391eda"];
+            var linearGradient = two.makeLinearGradient(
+                x, y + 50,
+                x + 50, y + 25,
+                new Two.Stop(0, colors[0]),
+                new Two.Stop(.5, colors[1])
+            );
+            star.fill = linearGradient;
+
+            /*var rect = two.makeRectangle(0, 0, 600, 800);
+             rect.fill = linearGradient;*/
+
+            var circle = two.makeCircle(x, y, r);
+            circle.fill = "#eee";
+            circle.opacity = 1;
+
+            var group = two.makeGroup(circle, line, star, n);
+
+            two.bind('update', function () {
+                var box = group;
+                var r2 = r;
+                if (box.translation.x + gamma < r2) {
+                    gamma = 0;
+                    box.translation.x = r2;
+                } else if (box.translation.x + gamma >= wW - r2) {
+                    gamma = 0;
+                    box.translation.x = wW - r2;
+                }
+                if (box.translation.y + beta <= r2) {
+                    beta = 0;
+                    box.translation.y = r2;
+                } else if (box.translation.y + beta >= wH - r2) {
+                    beta = 0;
+                    box.translation.y = wH - r2;
+                }
+                gravity = new Two.Vector(gamma, beta);
+                box.translation.addSelf(gravity);
+                box.rotation = (alpha - 90 ) / 360 * 2 * 3.14;
+                $right.html(alpha + "<br/>" + (90 - alpha) + "<br/>" + box.translation.y);
+            });
+        }
+    };
+
+    $(function () {
+        Page.init();
+    });
+</script>
+</body>
+</html>

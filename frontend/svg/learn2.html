@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>学习 - 2</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        body { line-height: 1.5; }
+        div { width: 600px; padding: 20px; }
+        h4 { font-size: 18px; padding-bottom: 10px; }
+        svg { width: 600px; height: 200px; }
+    </style>
+</head>
+<body>
+
+<div>
+    <h4>1、纯色、渐变、图案可用于fill 填色，也可用于stroke的填色<br/>
+        &lt;pattern&gt;表示一个图案的区域<br/>
+        &lt;defs&gt;声明变量，不会独立显示在页面中</h4>
+    <svg style="height:160px;">
+        <rect x="0" y="5" width="100" height="60" stroke="#000" stroke-width="2" fill="#f40"/>
+        <rect x="110" y="5" width="100" height="60" stroke="#000" stroke-width="2" fill="url(#g1)"/>
+        <rect x="220" y="5" width="100" height="60" stroke="url(#g3)" stroke-width="5" fill="none"/>
+        <rect x="330" y="5" width="100" height="60" stroke="none" stroke-width="0" fill="url(#g3)"/>
+        <rect x="0" y="75" width="100" height="60" stroke="#000" stroke-width="2" fill="url(#g2)"/>
+        <rect x="110" y="75" width="100" height="60" stroke="#000" stroke-width="2" fill="url(#g4)"/>
+        <rect x="220" y="75" width="100" height="60" stroke="#000" stroke-width="2" fill="url(#f1)"/>
+        <!-- 线性 水平渐变 -->
+        <defs>
+            <linearGradient id="g1">
+                <stop offset="0%" stop-color="#f00"/>
+                <stop offset="50%" stop-color="#00f"/>
+                <stop offset="100%" stop-color="#ff0"/>
+            </linearGradient>
+        </defs>
+        <!-- 线性 对角的渐变 -->
+        <defs>
+            <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f00"/>
+                <stop offset="50%" stop-color="#00f"/>
+                <stop offset="100%" stop-color="#ff0"/>
+            </linearGradient>
+        </defs>
+        <!-- 放射渐变 -->
+        <defs>
+            <radialGradient id="g2">
+                <stop offset="0%" stop-color="#f00"/>
+                <!-- 圆心 -->
+                <stop offset="50%" stop-color="#00f"/>
+                <stop offset="100%" stop-color="#ff0"/>
+            </radialGradient>
+        </defs>
+        <!-- 放射渐变 - 改变圆原点 -->
+        <defs>
+            <radialGradient id="g4" cx="20%" cy="40%">
+                <stop offset="0%" stop-color="#f00"/>
+                <stop offset="50%" stop-color="#00f"/>
+                <stop offset="100%" stop-color="#ff0"/>
+            </radialGradient>
+        </defs>
+        <!-- 图案背景 -->
+        <defs>
+            <pattern id="f1" patternUnits="userSpaceOnUse" x="0" y="0" width="30" height="30">
+                <rect x="0" y="0" width="25" height="25" stroke="#none" fill="#aaf"></rect>
+            </pattern>
+        </defs>
+    </svg>
+</div>
+
+<div>
+    <h4>2、text<br/>
+        rotate : 旋转字符 <br/>
+        textLength : 设置这段文字的长度--px<br/>
+        lengthAdjust : spacing - 拉宽文字间距满足文字的长度;spacingAndGlyphs-拉宽文字<br/>
+        x,y文字的绝对位置；dx,dy文字的相对位置(相对与前一个字的位置) <br/>
+        startOffset : 文字的相对于路径的起始位置<br/><br/>
+        tspan--text里的群组，属性几乎和text具有的一模一样<br/>
+        textPath - 文字路径
+    </h4>
+    <svg style="height:300px;">
+        <text x="0,20,50,80,120" y="20,40,30,15,20" rotate="30, 20, 90, 180, 350, 90">每个字都可以不一样</text>
+        <text x="10" y="200" textlength="500" lengthAdjust="spacingAndGlyphs">拉宽文字满足textlength的长度</text>
+        <text x="10" y="230" textlength="500" lengthAdjust="spacing">拉宽文字间隔满足textlength的长度</text>
+        <text x="10" y="260">
+            <tspan rotate="10" x="20">群组</tspan>
+            <tspan x="60">效果</tspan>
+        </text>
+
+        <path d="M0 50 C150 150 100 50 300 50" stroke="#000" fill="none"/>
+        <text dy="20">
+            <textPath xlink:href="#p1">这是跟着path跑的文字，感觉很厉害的样子感觉很厉害的样子
+            </textPath>
+        </text>
+        <text dy="50">
+            <textPath startOffset="10%" xlink:href="#p1">这是跟着path跑的文字，感觉很厉害的样子</textPath>
+        </text>
+
+        <defs>
+            <path id="p1" d="M0 50 C150 150 100 50 300 50" stroke="#000" fill="none"/>
+        </defs>
+    </svg>
+</div>
+
+<div>
+    <h4>3、剪裁和遮色片<br/>
+        遮色片：黑到白的灰色分布，如果是灰阶以外的颜色，就被转换成灰阶；#fff全透；#000不透；
+    </h4>
+    <svg>
+        <!-- 裁剪 -->
+        <polygon points="0,0 0,80 100,120 70,10 10,5" fill="rgba(0,0,0,.1)"/>
+        <circle cx="80" cy="80" r="50" fill="rgba(0,0,0,.1)"/>
+        <rect x="0" y="0" width="200" height="200" fill="rgba(0,0,0,.1)"/>
+
+        <clipPath id="a1">
+            <polygon id="a1Shape" points="0,0 0,80 100,120 70,10 10,5" stroke="blue"/>
+        </clipPath>
+
+        <clipPath id="a2">
+            <circle id="a2Shape" cx="80" cy="80" r="50"/>
+        </clipPath>
+
+        <clipPath id="a3" clip-path="url(#a1)">
+            <use x="0" y="0" width="50" height="50" xlink:href="#a2Shape"/>
+        </clipPath>
+
+        <rect x="0" y="0" width="200" height="200" fill="#cc0"
+              clip-path="url(#a3)"/>
+
+        <!-- 遮罩/遮色片 -->
+        <defs>
+            <mask id="mask1">
+                <rect x="0" y="210" width="100" height="100" fill="#666"/>
+            </mask>
+        </defs>
+        <rect x="0" y="210" width="150" height="150" fill="rgba(0,0,0,.05)" desc="box2背景"/>
+        <rect x="150" y="210" width="150" height="150" fill="#0f0" desc="box2颜色"/>
+        <rect x="150" y="210" width="100" height="100" fill="#666" desc="遮色片"/>
+        <rect x="0" y="210" width="150" height="150" fill="#0f0" mask="url(#mask1)" id="box2" desc="实测颜色：#92F892"/>
+    </svg>
+</div>
+
+<div>
+    <h4>4、transform<br/>
+        translate(tx,[ty]) -- matrix(1 0 0 1 tx ty)<br/>
+        scale(sx,[sy]) -- matrix(sx 0 0 sy 0 0)<br/>
+        rotate(angle,[cx,cy]) : 自定义旋转点 --matrix(cos(a) sin(a) -sin(a) cos(a) 0 0)<br/>
+        skewX(angle)、skewY(angle) -- matrix(1 0 tan(a) 1 0 0)、skewY：matrix(1 tan(a) 0 1 0 0)<br/>
+        matrix : 矩阵变换 <br/>
+    </h4>
+    <svg style="height:200px;">
+        <rect x="20" y="20" width="100" height="60" fill="#f00"
+              transform="translate(10,10) rotate(90,65,45)"></rect>
+        <rect x="20" y="20" width="100" height="60" fill="rgba(255,0,0,.2)" desc=""></rect>
+    </svg>
+</div>
+
+<div>
+    <h4>5、动画<br/>
+        set<br/>
+        animate<br/>
+        animateMotion<br/>
+        animateTransform <br/>
+        自从Chrome 45.0，SMIL动画被弃用了，以利于CSS动画和Web动画。
+    </h4>
+    <svg>
+        <rect x="0" y="0" width="50" height="50" fill="#f00">
+            <set attributeName="x" to="50" begin="2s"></set>
+            <!-- attributeName：运动的属性；to：目标值；begin：延迟时间 -->
+        </rect>
+        <rect x="0" y="0" width="50" height="50" fill="#ff0">
+            <animate attributeName="y" to="50" dur="2s" begin="1s" fill="freeze"></animate>
+            <!-- attributeName：运动的属性；to：目标值；begin：延迟时间 ；fill：remove-恢复初始位置/freeze-固定在结束位置 -->
+        </rect>
+
+        <rect width="20" height="10" x="0" y="0" fill="#09c">
+            <animateMotion dur="5s" path="M180 50 C550 300 100 300 400 50" rotate="auto" repeatCount="indefinite"/>
+            <!-- repeatCount：循环次数；rotate：是否跟随路径旋转 -->
+        </rect>
+        <path d="M180 50 C550 300 100 300 400 50" stroke="#000" fill="none"/>
+        <rect x="0" y="0" width="50" height="50" fill="rgba(255,0,0,.2)" desc=""></rect>
+
+        <rect x="50" y="100" width="50" height="50" fill="rgba(0,0,0,.1)"></rect>
+        <rect x="50" y="100" width="50" height="50" fill="#abc" id="rect2">
+            <animateTransform dur="2s" attributeName="transform" repeatCount="indefinite" type="rotate" from="0,75,125"
+                              to="360,75,125"/>
+        </rect>
+    </svg>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+</body>
+</html>

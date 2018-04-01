@@ -11,7 +11,7 @@ def main():
     dirname = 'frontend'
     # 目标文件夹和过滤配置
     target_dir = '../{0}/'.format(dirname)
-    filter_dir = ['css', 'js', 'tpl']
+    filter_dir = ['css', 'js', 'tpl', 'test']
     filter_list = []
     for name in filter_dir:
         filter_list.append('({0}\/{1})'.format(dirname, name))

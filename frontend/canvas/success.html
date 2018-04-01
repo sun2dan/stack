@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>分段动画 - success</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        .chart { width: 50px; height: 50px; background-color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="chart pr">
+    <canvas></canvas>
+</div>
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    $(function () {
+
+        drawCorrect();
+
+        // 画图
+        function drawCorrect() {
+            var requestAni = window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function (callback) {
+                    return setTimeout(callback, 1000 / 60);
+                };
+            var cancelAni = window.cancelAnimationFrame ||
+                window.webkitCancelAnimationFrame ||
+                window.mozCancelAnimationFrame ||
+                window.oCancelAnimationFrame ||
+                window.msCancelAnimationFrame ||
+                function (ani) {
+                    clearTimeout(ani);
+                };
+
+            var $chart = $(".chart");
+            var w = $chart.width();
+            var he = $chart.height();
+            var w2 = w * 2;
+            var he2 = he * 2;
+            var circle = {x: w, y: he, r: w2 / 2};
+
+            var startArc = 0;
+            var endArc = 2 * Math.PI;
+            var ctx = null;
+            var canvas = null;
+            var index = 0;
+            // 三个点的位置百分比
+            var dotArr = [[0.275, 0.4667], [0.44167, 0.625], [0.725, 0.35]];
+            var points = [];
+            var idx = 0;  // 对号用的下标
+            var splits = [1.5, 1.5];   // 圆和对号的速率
+
+            for (var i = 0, len = dotArr.length; i < len; i++) {
+                var dot = dotArr[i];
+                var x = dot[0] * w2;
+                var y = dot[1] * he2;
+                points.push({x: x, y: y});
+            }
+            var formula = getFormula();    // 公式
+            init();
+            var myReq = requestAni(step);
+
+            function init() {
+                var $canvas = $chart.find("canvas");
+                canvas = $canvas.get(0);
+                $canvas.css({width: w, height: he});
+                canvas.width = w2;
+                canvas.height = he2;
+                ctx = canvas.getContext("2d");
+            }
+
+            // requestAni 替换 for
+            function step() {
+                index += splits[0];
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 绿色的底
+                ctx.beginPath();
+                ctx.fillStyle = "#1AB946";
+                ctx.arc(circle.x, circle.y, circle.r, startArc, endArc, true);
+                ctx.fill();
+
+                // 白色的遮罩 -- 遮罩变小
+                ctx.beginPath();
+                var r = circle.r - index;
+                if (r > 0) {
+                    ctx.fillStyle = "#fff";
+                    ctx.arc(circle.x, circle.y, r, startArc, endArc, true);
+                }
+                ctx.fill();
+
+                // 画对号
+                ctx.beginPath();
+                ctx.lineWidth = .04 * w2;
+                ctx.strokeStyle = "#fff";
+                ctx.lineJoin = "round";
+                // 第二个动画 对号 的开始条件
+                if (r < circle.r / 2) {
+                    idx += splits[1];
+                    var x = points[0].x + idx;
+                    var y = getPos(x);
+                    var p = points[0];
+                    var p1 = points[1];
+                    var p2 = points[2];
+
+                    ctx.moveTo(p.x, p.y);
+
+                    if (x < points[1].x) {
+                        ctx.lineTo(x, y);
+                    } else if (x <= points[2].x) {
+                        ctx.lineTo(p1.x, p1.y);
+                        ctx.lineTo(x, y);
+                    } else if (x >= points[2].x) {
+                        ctx.lineTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                    ctx.stroke();
+                    if (x >= points[2].x) {
+                        cancelAni(myReq);
+                        return;
+                    }
+                }
+                /* for (var i = 0, len = points.length; i < len; i++) {
+                 var p = points[i];
+                 ctx.lineTo(p.x, p.y);
+                 }*/
+                myReq = requestAni(step);
+            }
+
+            // 获取公式
+            function getFormula() {
+                var p1 = points[0];
+                var p2 = points[1];
+                var p3 = points[2];
+                var lv = [];
+                lv[0] = (p2.y - p1.y) / (p2.x - p1.x);
+                lv[1] = (p3.y - p2.y) / (p3.x - p2.x);
+                var b1 = p2.y - lv[0] * p2.x;
+                var b2 = p2.y - lv[1] * p2.x;
+                var formula = [{
+                    lv: lv[0],
+                    b: b1
+                }, {
+                    lv: lv[1],
+                    b: b2
+                }];
+                return formula;
+            }
+
+            function getPos(x) {
+                var cen = points[1];
+                var y = 0, f;
+                if (x < cen.x) {
+                    f = formula[0];
+                    y = f.lv * x + f.b;
+                } else {
+                    f = formula[1];
+                    y = f.lv * x + f.b;
+                }
+                return y;
+            }
+        }
+    });
+</script>
+</body>
+</html>

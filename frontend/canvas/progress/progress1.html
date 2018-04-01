@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>环形进度条 - 每段不同宽度</title>
+    <link href="../../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        .chart { width: 220px; height: 220px; margin: 50px auto; background-color: #eee; }
+    </style>
+</head>
+<body>
+
+<div class="chart pr">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+    (function () {
+        // 画图
+        function drawChart(data) {
+            data = data || [.4, .3, .3];
+
+            // 单色和渐变
+            var colors = ["#50E3C2", "#FF57CE", "#A46EFF"];
+            var colorArr = [["#00D8F8", "#01FDED"], ["#FE00B4", "#FA0171"], ["#A02EE6 ", "#8932E8"]];
+
+            var requestAni = window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function (callback) {
+                    return setTimeout(callback, 1000 / 60);
+                };
+            var cancelAni = window.cancelAnimationFrame ||
+                window.webkitCancelAnimationFrame ||
+                window.mozCancelAnimationFrame ||
+                window.oCancelAnimationFrame ||
+                window.msCancelAnimationFrame ||
+                function (ani) {
+                    clearTimeout(ani);
+                };
+
+            var $chart = $(".chart");
+            var w = $chart.width();
+            var he = $chart.height();
+            var w2 = w * 2;
+            var he2 = he * 2;
+            var rs = [110, 76, 46];
+            var circle = {x: w, y: he, r: w - rs[0]};
+            var startArc = -1 / 2 * Math.PI; // 从顶部开始逆时针显示
+            var endArc = 0;
+            var ctx = null;
+            var canvas = null;
+            var curIndex = 0;
+            var interval = -0.05; // 间隔
+            // 画圆环
+            var arcArr = [startArc];
+
+            init();
+
+            function init() {
+                var $canvas = $chart.find("canvas");
+                canvas = $canvas.get(0);
+                $canvas.css({width: w, height: he});
+                canvas.width = w2;
+                canvas.height = he2;
+                ctx = canvas.getContext("2d");
+                draw();
+            }
+
+            // requestAni 替换 for
+            function draw() {
+                var se = arcArr[curIndex];  // 开始的角度
+                endArc = se + -2 * data[curIndex] * Math.PI;    // 结束的角度
+                var index = 0;
+                var myReq = requestAni(step);
+
+                function step() {
+                    index++;
+                    var start = se;
+                    var end = se + index * interval;
+                    if (Math.abs(end) >= Math.abs(endArc)) {
+                        if (curIndex >= data.length - 1) {
+                            cancelAni(myReq);
+                            frame(curIndex, start, end);
+                            return;
+                        }
+                        end = endArc;
+                        index = 0;
+                        curIndex++;
+                        arcArr.push(end);
+                        se = arcArr[curIndex];  // 开始的角度
+                        endArc = se + -2 * data[curIndex] * Math.PI;    // 结束的角度
+                        arcArr.push(endArc);
+                    }
+                    frame(curIndex, start, end);
+                    myReq = requestAni(step);
+                }
+            }
+
+            function frame(i, start, end) {
+                clear();
+
+                // 画当前的一部分
+                drawSingle(i, start, end);
+
+                // 画之前的全部
+                if (i > 0) {
+                    //debugger;
+                    for (var j = 0; j < i; j++) {
+                        var s = arcArr[j];  // 开始的角度
+                        var e = s + -2 * data[j] * Math.PI;    // 结束的角度
+                        drawSingle(j, s, e);
+                    }
+                }
+
+                ctx.restore();
+            }
+
+            function drawSingle(i, start, end) {
+                ctx.save();
+                ctx.lineWidth = rs[i];
+                ctx.beginPath();
+                ctx.arc(circle.x, circle.y, circle.r + rs[i] / 2, start, end, true);
+
+                var x = circle.x - circle.r;
+                var grad = ctx.createLinearGradient(x, circle.y - circle.r, (circle.x + circle.r) / 2, circle.y + circle.r);
+                grad.addColorStop(0, colorArr[i][1]);
+                grad.addColorStop(1, colorArr[i][0]);
+                ctx.strokeStyle = grad;
+                ctx.stroke();
+            }
+
+            function draw1() {
+                clear();
+
+                // 画圆环
+                var arcArr = [startArc];
+                for (var i = 0, len = data.length; i < len; i++) {
+                    var se = arcArr[i];  // 开始的角度
+                    endArc = se + -2 * data[i] * Math.PI;    // 结束的角度
+                    arcArr.push(endArc);
+
+                    ctx.save();
+                    ctx.lineWidth = rs[i];
+                    ctx.beginPath();
+                    ctx.arc(circle.x, circle.y, circle.r + rs[i] / 2, se, endArc, true);
+
+                    var x = circle.x - circle.r;
+                    var grad = ctx.createLinearGradient(x, circle.y - circle.r, (circle.x + circle.r) / 2, circle.y + circle.r);
+                    grad.addColorStop(0, colorArr[i][1]);
+                    grad.addColorStop(1, colorArr[i][0]);
+                    ctx.strokeStyle = grad;
+
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                ctx.save();
+            }
+
+            function clear() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        $(function () {
+            drawChart();
+        });
+    })();
+</script>
+</body>
+</html>

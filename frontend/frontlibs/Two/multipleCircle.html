@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>Two - 环形进度</title>
+    <link href="../../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        canvas, body { background-color: #000; }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/two.js/0.7.0-alpha.1/two.min.js"></script>
+<script src="../../js/tools.js"></script>
+<!-- demo代码 -->
+<script type="text/javascript">
+    $(function () {
+        page.init();
+    });
+
+    var w = 240, h = 240;
+    var ArrArcs = [];
+
+    var split = 10;
+    var colors = ["#13ffdc", "#1ccbdc", "#391eda"];
+
+    var group = null;
+
+    var page = {
+        init: function () {
+            this.pageInit();
+        },
+        pageInit: function () {
+            // 通过修改url上的type参数，可以修改渲染方式
+            var params = tools.getQuery();
+            var tt = params.type;
+            var type = /(svg|webgl)/.test(tt) ? tt : 'svg';
+            
+            var two = new Two({
+                type: Two.Types[type],
+                fullscreen: true,
+                autostart: true
+            }).appendTo(document.body);
+
+            this.drawBgCircle(two);
+            this.drawDynamicCircle(two);
+            this.drawTips(two);
+
+            var arr = [0.95, 0.5, 0.3, 0.8, 0.4];
+            var start = -1 / 2 * Math.PI;
+            var n = 0;
+
+            two.bind('resize', function () {
+
+            }).bind('update', function () {       // 对应 requestAnimationFrame
+                // 圆弧
+                if (n < 100) {
+                    for (var i = 0; i < 5; i++) {
+                        var target = -5 / 2 * Math.PI * arr[i];
+                        var split = (target - start) / 100 * n;
+                        var arc = ArrArcs[i];
+                        var cur = start + split;
+                        if (Math.abs(cur) <= Math.abs(target)) {
+                            arc.endAngle = cur;
+                            n++;
+                        }
+                    }
+                } else {
+                    // 图例文字
+                    if (group.translation.x >= 0) {
+                        return;
+                    }
+                    group.translation.x += 15;
+                }
+            });
+        },
+        // 画背景
+        drawBgCircle: function (two) {
+            var startDis = 110;
+            var arrArc = [];
+            for (var i = 0; i < 5; i++) {
+                var arc = two.makeArcSegment(w / 2, h / 2, startDis, startDis - split, 0, 2 * Math.PI);
+                arc.fill = "#101243";
+                arrArc.push(arc);
+                startDis -= 20;
+            }
+        },
+
+        // 画动态比例
+        drawDynamicCircle: function (two) {
+            var startDis = 110;
+            var arrArc = [];
+            var startArc = -1 / 2 * Math.PI; // 从顶部开始逆时针显示
+
+            /*var radialGradient = two.makeRadialGradient(
+             0, 0,
+             360,
+             new Two.Stop(0, 'rgba(255, 0, 0, 1)', 1),
+             new Two.Stop(0.5, 'rgba(255, 0, 0, 0)', 0)
+             );*/
+            var linearGradient = two.makeLinearGradient(
+                0, 240,
+                240, 0,
+                new Two.Stop(0, colors[0]),
+                new Two.Stop(.5, colors[1]),
+                new Two.Stop(1, colors[2])
+            );
+
+            for (var i = 0; i < 5; i++) {
+                var arc = two.makeArcSegment(w / 2, h / 2, startDis, startDis - split, startArc, startArc);
+                arc.fill = linearGradient;
+                arrArc.push(arc);
+                startDis -= 20;
+            }
+            ArrArcs = arrArc;
+            console.log(arrArc[0]);
+        },
+        // 画标注
+        drawTips: function (two) {
+            var startY = 15;
+            group = two.makeGroup();
+
+            for (var i = 0; i < 5; i++) {
+                var endX = 200 + startY;
+                var line = two.makeLine(120, startY, endX - 40, startY);
+                line.stroke = "rgba(255,255,255,.4)";
+                line.lineWidth = .5;
+
+                var text = two.makeText("类型" + i, endX - 10, startY);
+                text.fill = "#fff";
+                text.size = 12;
+                /*var text = new Two.Text("类型1", 0, 0);
+                 text.fill = "#fff";
+                 two.add(text)*/
+                startY += 20;
+
+                group.add(text, line);
+                group.translation.set(-360, 0);
+            }
+        }
+    }
+</script>
+</body>
+</html>
