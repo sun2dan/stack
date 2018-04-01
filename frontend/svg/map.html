@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>根据行政区划边界坐标数据，绘制中国地图</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        .page { width: 600px; height: 400px; padding: 20px; display: inline-block; }
+        h4 { font-weight: bold; padding-bottom: 5px; }
+        svg { width: 700px; height: 560px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <svg id="svg">
+    </svg>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+    /*                              
+     使用 CSS 控制 SVG：
+     svg规范将属性分为properties 和 attributes，properties可用CSS设置，后者不能；
+     http://www.w3.org/TR/SVG/propidx.html
+     http://www.w3.org/TR/SVG/attindex.html
+     */
+    !function () {
+        /**
+         行政区划的json数据，是一组经纬度坐标，本身就是数字
+         如果直接用这些坐标画出图形，就能得到地图了，
+         因为没有南海诸岛的数据，所以也就没法绘制那部分了
+
+         需要注意两个个地方：
+         1、越靠近赤道，纬度越小；但是在画布上绘制时，越往下数字越大；
+         需要做一个反向操作，使其在竖直方向越往下，数值越大；
+         2、中国经纬度范围大约是这样：
+         经度范围：73°33′E至135°05′E
+         纬度范围：3°51′N至53°33′N
+         如果直接用这个坐标绘制，地图就太小了，需要整体放大一下
+         * */
+        var fillMap = getTestData();
+        var fillColor = ["#0bdba8", "#0074ff", "#a4cdff"];
+
+        init();
+
+        function init() {
+            // 画行政区划用的基础数据
+            $.get('../../data/china.json', function (result) {
+                var features = result.features;
+                features.forEach(function (item, i) {
+                    var cords = item.geometry.coordinates;
+                    cords.forEach(function (arr, i) {
+                        drawMap(arr, item.properties);
+                    });
+                });
+            });
+        }
+
+        function drawMap(arr, pros) {
+            var svg = document.getElementById("svg");
+            var poly = createElement("polygon");
+            // <polygon fill="#e0f" stroke="#000" stroke-width="2" points="10,100 10,150 100,150 80,40"></polygon>
+
+            // TODO 放大倍数、移动距离都是通过预览页面一点点调出来的
+            var scale = [9, 12]; // x,y方向的放大倍数
+            var str = "";
+            arr.forEach(function (item, i) {
+                if (item.length > 2) {  // 河北省比较特殊，有多个数组，所以得循环调用一下
+                    return drawMap(item, pros);
+                }
+                var x = item[0] * scale[0] - 600;  // 水平移动
+                var y = 700 - item[1] * scale[1];  // 反向操作
+                str += x + "," + y + " ";
+                return str
+            });
+
+            var fill = "#e6f1ff";
+
+            var name = pros.name;
+            fill = fillColor[fillMap[name]] || fill;
+
+            poly._prop("stroke", "#fff")._prop("stroke-width", ".5")._prop("points", str)._prop("fill", fill)._prop("pname", name)._prop("", "");
+            svg.appendChild(poly);
+            
+            poly.onmouseover = function () {
+                console.log(123);
+            };
+        }
+
+        function getTestData() {
+            // 数据： 省份名称:使用的颜色下标，没有出现的，使用默认颜色
+            var result = {
+                "北京": 0,
+                "山东": 0,
+                "西藏": 0,
+                "上海": 0,
+                "辽宁": 0,
+                "天津": 1,
+                "河北": 1,
+                "湖北": 1,
+                "安徽": 1,
+                "浙江": 1,
+                "广东": 1,
+                "黑龙江": 2,
+                "吉林": 2,
+                "山西": 2,
+                "陕西": 2,
+                "湖南": 2,
+                "四川": 2,
+                "江西": 2,
+                "福建": 2,
+                "台湾": 2
+            };
+            return result;
+        }
+
+        // 创建元素
+        function createElement(tagName) {
+            var element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+            element._prop = function (name, value) {
+                name && this.setAttribute(name, value);
+                return this;
+            };
+            return element;
+        }
+    }();
+
+
+</script>
+</body>
+</html>

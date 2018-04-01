@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>ECharts - 中国地图行政区划图</title>
+    <link href="../../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        .page { width: 454px; height: 350px; }
+        .map-tooltip { position: relative; top: -20px; line-height: 1; padding: 6px 10px; border-radius: 2px; background-color: rgba(40, 48, 57, .9); }
+        .map-tooltip:after { content: ""; position: absolute; bottom: -4px; left: 0; right: 0; margin: 0 auto; padding: 0; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid rgba(40, 48, 57, .9); }
+    </style>
+</head>
+<body>
+
+<div id="page" class="page">
+
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/echarts/3.8.5/echarts.min.js"></script>
+<script>
+    /**
+     按 value 字段对省份数据排序，
+     1-5： #0bdba8,  6-10：#0074ff， 10-20：#a4cdff，20之后：#e6f1ff
+
+     南海诸岛并没有在地图经纬度的 json 数据中，如果需要控制南海诸岛的颜色，需要先给每个区域设置背景色，
+     修改其他行政区划的背景色，最终南海诸岛不会被覆盖；
+     * */
+    (function () {
+        // 最后一个：南海诸岛的颜色
+        var colors = ["#0bdba8", "#0074ff", "#a4cdff", "#e6f1ff", "#0debef"];
+
+        init();
+
+        function init() {
+            $.get('../../../data/china.json', function (geoJson) {
+                var provData = formatProvData(getTestData());
+                drawMap(geoJson, provData);
+            });
+        }
+
+        // 图表入口
+        function formatProvData(result) {
+            var list = result.list;
+            list.sort(function (a, b) {
+                return b.value - a.value;
+            });
+            for (var i = 0, len = list.length; i < len; i++) {
+                var item = list[i];
+                var idx = 3;
+                if (i < 5) {
+                    idx = 0;
+                } else if (i < 10) {
+                    idx = 1;
+                } else if (i < 20) {
+                    idx = 2;
+                } else {
+                    idx = 3;
+                }
+                var color = colors[idx];
+                console.log(item);
+                item.itemStyle = {
+                    normal: { // 默认背景色
+                        areaColor: color
+                    },
+                    emphasis: { // 悬浮颜色
+                        areaColor: color
+                    }
+                }
+            }
+            return list;
+        }
+
+        function drawMap(geoJson, provList) {
+            var myChart = echarts.init(document.getElementById('page'));
+            echarts.registerMap('china', geoJson);
+            var color = colors[4];   // 行政区划默认的颜色，南海诸岛的颜色
+
+            var option = {
+                //backgroundColor: "rgba(0,0,0, .05)",
+                tooltip: {
+                    trigger: 'item',
+                    padding: 0,
+                    backgroundColor: 'transparent',
+                    textStyle: {},
+                    formatter: function (params, id, fn) {
+                        var idx = params.dataIndex;
+                        if (idx === -1) return; // 南海诸岛返回 -1
+                        return '<div class="map-tooltip">' + params.data.name + "&nbsp;NO." + (idx + 1) + '：' + params.data.value + '</div>';
+                    },
+                    position: function (pos, params, dom, rect, size) {
+                        return 'inside';
+                    }
+                },
+                geo: {
+                    map: 'china',
+                    itemStyle: {
+                        normal: {
+                            areaColor: 'transparent',
+                            borderColor: 'transparent'
+                        },
+                        emphasis: {
+                            areaColor: 'transparent'
+                        }
+                    },
+                    silent: true
+                },
+                series: [
+                    {
+                        name: '',
+                        type: 'map',
+                        mapType: 'china',
+                        roam: false,
+                        right: 0,
+                        left: 0,
+                        top: 0,
+                        itemStyle: {
+                            normal: {
+                                label: {show: false},
+                                areaColor: color,
+                                borderWidth: 1,
+                                borderColor: "#fff"
+                            },
+                            emphasis: {
+                                label: {show: false},
+                                areaColor: color
+                            }
+                        },
+                        data: provList
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        }
+
+        // 测试数据
+        function getTestData() {
+            /**
+             省份数据结构
+             {
+                name: 省份缩写名称，不带"省、市、xx自治区、特别行政区"
+                …… 其他数据字段
+             }
+             * */
+            var provResult = {
+                "list": [
+                    {name: '青海', value: 32},
+                    {name: '贵州', value: 23},
+                    {name: '澳门', value: 11},
+                    {name: '广东', value: 22},
+                    {name: '黑龙江', value: 41},
+                    {name: '西藏', value: 31},
+                    {name: '河南', value: 78},
+                    {name: '新疆', value: 28},
+                    {name: '云南', value: 77},
+                    {name: '山东', value: 29},
+                    {name: '辽宁', value: 75},
+                    {name: '安徽', value: 33},
+                    {name: '广西', value: 68},
+                    {name: '浙江', value: 26},
+                    {name: '江西', value: 25},
+                    {name: '福建', value: 42},
+                    {name: '海南', value: 102},
+                    {name: '山西', value: 65},
+                    {name: '四川', value: 30},
+                    {name: '江苏', value: 27},
+                    {name: '天津', value: 62},
+                    {name: '宁夏', value: 21},
+                    {name: '湖南', value: 37},
+                    {name: '香港', value: 16},
+                    {name: '内蒙古', value: 50},
+                    {name: '陕西', value: 49},
+                    {name: '河北', value: 45},
+                    {name: '北京', value: 100},
+                    {name: '上海', value: 94},
+                    {name: '台湾', value: 18},
+                    {name: '湖北', value: 24},
+                    {name: '甘肃', value: 66},
+                    {name: '重庆', value: 90},
+                    {name: '吉林', value: 44},
+                ]
+            };
+            return provResult;
+        }
+    })();
+</script>
+</body>
+</html>

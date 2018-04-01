@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>ECharts - 中国地图城市散点图</title>
+    <link href="../../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        .page { width: 454px; height: 350px; }
+        .map-tooltip { position: relative; top: -20px; line-height: 1; padding: 6px 10px; border-radius: 2px; background-color: rgba(40, 48, 57, .9); }
+        .map-tooltip:after { content: ""; position: absolute; bottom: -4px; left: 0; right: 0; margin: 0 auto; padding: 0; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid rgba(40, 48, 57, .9); }
+    </style>
+</head>
+<body>
+
+<div id="page" class="page">
+
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/echarts/3.8.5/echarts.min.js"></script>
+<script>
+    (function () {
+        var colors = ["#0bdba8", "#0074ff", "#a4cdff", "#e6f1ff", "#a4cdff"];
+
+        init();
+
+        function init() {
+            var geoJson, cityMap;
+
+            // 画行政区划用的基础数据
+            $.get('../../../data/china.json', function (result) {
+                geoJson = result;
+                main();
+            });
+
+            // 城市的坐标数据
+            $.get('../../../data/city.json', function (result) {
+                cityMap = result;
+                main();
+            });
+
+            function main() {
+                if (!geoJson || !cityMap) return;
+                var cityData = formatCityData(cityMap, getTestData());
+                drawMap(geoJson, cityData);
+            }
+        }
+
+        // 城市数据
+        function formatCityData(cityMap, cityResult) {
+            var provList = cityMap.list;
+
+            // 散点图的尺寸，最大30px，最小10px
+            // aa最大的值，点的大小为30px，aa最小的值，为10px，其他点的大小根据aa的值与最小值的比例得出
+            var cityData = {
+                size: [10, 30]
+            };
+            var list = cityResult.list;
+            list.sort(function (a, b) {
+                return b.aa - a.aa;
+            });
+            cityData.minVal = list[list.length - 1].aa;
+            cityData.maxVal = list[0].aa;
+
+            for (var idx = 0, len = list.length; idx < len; idx++) {
+                var city = list[idx];
+                for (var i = 0, leng = provList.length; i < leng; i++) {
+                    var prov = provList[i];
+                    if (prov.name === city.province) {
+                        var clist = prov.children;
+                        for (var j = 0, lengt = clist.length; j < lengt; j++) {
+                            var c = clist[j];
+                            if (c.name === city.name) {
+                                city.value = [c.log, c.lat, city.aa];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            cityData.list = list;
+            return cityData;
+        }
+
+        function drawMap(geoJson, cityData) {
+            var myChart = echarts.init(document.getElementById('page'));
+            echarts.registerMap('china', geoJson);
+            var color = colors[3];
+
+            var option = {
+                //backgroundColor: "rgba(0,0,0, .05)",
+                tooltip: {
+                    trigger: 'item',
+                    padding: 0,
+                    backgroundColor: 'transparent',
+                    textStyle: {},
+                    formatter: function (params, id, fn) {
+                    },
+                    position: function (pos, params, dom, rect, size) {
+                        return 'inside';
+                    }
+                },
+                geo: {
+                    map: 'china',
+                    itemStyle: {
+                        normal: {
+                            areaColor: 'transparent',
+                            borderColor: 'transparent'
+                        },
+                        emphasis: {
+                            areaColor: 'transparent'
+                        }
+                    },
+                    silent: true
+                },
+                series: [
+                    {
+                        name: '',
+                        type: 'map',
+                        mapType: 'china',
+                        roam: false,
+                        right: 0,
+                        left: 0,
+                        top: 0,
+                        itemStyle: {
+                            normal: {
+                                label: {show: false},
+                                areaColor: color,
+                                borderWidth: 1,
+                                borderColor: "#fff"
+                            },
+                            emphasis: {
+                                label: {show: false},
+                                areaColor: color
+                            }
+                        },
+                        //data: provList
+                    },
+                    {
+                        name: '城市占比',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        showEffectOn: 'emphasis',
+                        rippleEffect: {
+                            period: 4,
+                            scale: 1.5,
+                            brushType: 'fill'
+                        },
+                        data: cityData.list,
+                        symbolSize: function (value, params) {
+                            var c = cityData;
+                            var minv = c.minVal;
+                            var sizes = c.size;
+                            return sizes[0] + (value[2] - minv) / ((c.maxVal - minv) / sizes[1]);
+                        },
+                        tooltip: {
+                            trigger: 'item',
+                            backgroundColor: 'transparent',
+                            padding: 0,
+                            position: function (params) {
+                                return 'top'
+                            },
+                            formatter: function (params, ticket, callback) {
+                                var idx = params.dataIndex;
+                                if (idx === -1) return;
+                                return '<div class="map-tooltip">' + params.data.name + "&nbsp;NO." + (idx + 1) + '</div>';
+                            }
+                        },
+                        itemStyle: {
+                            normal: {
+                                color: function (params) {
+                                    // 前5个一种样式，其他的一种样式
+                                    if (params.dataIndex < 5) {
+                                        return {
+                                            type: 'radial',
+                                            x: .5,
+                                            y: .5,
+                                            r: .5,
+                                            colorStops: [{
+                                                offset: 0, color: 'rgba(11,219,168,.01)'
+                                            }, {
+                                                offset: .79, color: 'rgba(11,219,168,.4)'
+                                            }, {
+                                                offset: .8, color: 'rgba(11,219,168,.4)'
+                                            }, {
+                                                offset: .96, color: 'rgba(11,219,168,.6)'
+                                            }, {
+                                                offset: 1, color: 'rgba(11,219,168,1)'
+                                            }],
+                                            globalCoord: false // 缺省为 false
+                                        }
+                                    } else {
+                                        return {
+                                            type: 'radial',
+                                            x: .5,
+                                            y: .5,
+                                            r: .5,
+                                            colorStops: [{
+                                                offset: 0, color: 'rgba(0,116,255,.01)'
+                                            }, {
+                                                offset: .79, color: 'rgba(0,116,255,.4)'
+                                            }, {
+                                                offset: .8, color: 'rgba(0,116,255,.4)'
+                                            }, {
+                                                offset: .96, color: 'rgba(0,116,255,.6)'
+                                            }, {
+                                                offset: 1, color: 'rgba(0,116,255,1)'
+                                            }],
+                                            globalCoord: false // 缺省为 false
+                                        }
+                                    }
+                                },
+                                shadowColor: 'rgba(0,116,255,0.2)',
+                                shadowBlue: 2,
+                                shadowOffsetY: 1
+                            }
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        }
+
+        function getTestData() {
+            /**
+             城市数据结构
+             {
+                 name : 城市名称，缩写名称，后边不需要带"市"
+                 province : 所在省份名称，规则同省份数据结构里的名称
+                 …… 其他数据字段
+             }
+             */
+            var cityResult = {
+                "success": true,
+                "list": [{
+                    "name": "大兴",
+                    "province": "北京",
+                    "aa": 1369
+                }, {
+                    "name": "济南",
+                    "province": "山东",
+                    "aa": 1273
+                }, {
+                    "name": "郑州",
+                    "province": "河南",
+                    "bb": 1156,
+                    "aa": 1157
+                }, {
+                    "name": "秦皇岛",
+                    "province": "河北",
+                    "aa": 400
+                }, {
+                    "name": "嘉定",
+                    "province": "上海",
+                    "aa": 966
+                }, {
+                    "name": "新建",
+                    "province": "江西",
+                    "aa": 832
+                }, {
+                    "name": "广州",
+                    "province": "广东",
+                    "aa": 717
+                }, {
+                    "name": "绵阳",
+                    "province": "四川",
+                    "aa": 627
+                }, {
+                    "name": "成都",
+                    "province": "四川",
+                    "aa": 527
+                }, {
+                    "name": "大同",
+                    "province": "山西",
+                    "aa": 227
+                }, {
+                    "name": "乌鲁木齐",
+                    "province": "新疆",
+                    "aa": 589
+                }, {
+                    "name": "福州",
+                    "province": "福建",
+                    "aa": 500
+                }]
+            };
+            return cityResult;
+        }
+    })();
+</script>
+</body>
+</html>
