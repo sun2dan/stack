@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>格式化金额 - 千分位分隔符</title>
+    <link href="../css/common.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="page f12">
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+    // 格式化金额
+    function formatAmount(n) {
+        if (n < 1000) return n.toString();
+        var arr = n.toString().split(".");
+        var revStr = arr[0].split("").reverse().join("");
+        var revDotStr = revStr.replace(/(\d{3})/gmi, "$1,").replace(/,$/gmi, "");
+        var res = revDotStr.split("").reverse().join("");
+        return res + (arr[1] ? "." + arr[1] : "");
+    }
+
+    var amo = formatAmount(1234567890);
+    console.log(amo);
+
+    console.log(amo.toLocaleString("en_us"));
+</script>
+</body>
+</html>

@@ -24,5 +24,20 @@ window.tools = {
             return args[arguments[1]];
         });
         return formatStr;
+    },
+
+    formatDate: function (date) {
+        date = date || new Date();
+        var str = date.toString(); // Sun Apr 01 2018 21:57:48 GMT+0800 (CST)
+        var res = str.replace(/\s+/gmi, "").replace(/^[a-z]+/gmi, "").replace(/G[a-z\+\(\)\d]+/gmi, "").replace(/(\d{2})(\d{4})([\d:]+)/gmi, "$2--$1 $3");
+
+        var m = (date.getMonth() + 1).toString().replace(/^(\d)$/, "-0$1-");
+        res = res.replace(/--/gmi, m);
+        return res;
+    },
+
+    formatAmount: function (amo) {
+        amo = amo || "";
+        return amo.toLocaleString("en_us");
     }
 };

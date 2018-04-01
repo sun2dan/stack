@@ -64,3 +64,10 @@ a:active, a:hover, a:focus {
 body {
   line-height: 1;
   font-size: 14px; }
+
+.f12 {
+  font-size: 30px;
+  padding: 20px; }
+  .f12:before {
+    display: block;
+    content: "F12"; }
