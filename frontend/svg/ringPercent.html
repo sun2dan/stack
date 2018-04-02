@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>环形百分比</title>
+    <link href="../css/common.css" rel="stylesheet">
+</head>
+<body>
+
+<!--
+<svg style="height:200px; width:200px;" id="chart_pie1">
+    <circle cx="100" cy="100" r="100" fill="#5594E7"/>
+    <circle cx="100" cy="100" r="60" fill="white"/>
+    <path d="M100 100, L100 0, A100 100 0 0 0 0 100,Z" fill="#fa0" />
+    <path d="M100 100, L100 40, A60 60 0 0 0 40 100,Z" fill="#fff" />
+</svg>
+-->
+
+<svg style="height:200px; width:200px; left:300px;" class="abs-lt" id="chart_pie">
+</svg>
+<!--
+<svg style="height:200px; width:200px; left:600px" class="abs-lt">
+   <circle cx="100" cy="100" r="100" fill="#5594E7"/>
+   <path d="M100 100, L100 0, A100 100 0 0 0 0 100,Z" fill="#fa0" />
+   <circle cx="100" cy="100" r="60" fill="white"/>
+</svg>
+-->
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+
+    String.prototype.format = function () {
+        var pattern = /\{([\w\-_]+)\}/gm;
+        var args = /\{(\d+)\}/.test(this) ? arguments : arguments[0];
+        var format = this.replace(pattern, function () {
+            return args[arguments[1]];
+        });
+        return format;
+    }
+
+
+    $(function(){
+        var arr = [12, 78, 101, 20];
+        var $par = $("#chart_pie");
+        drawSector({dataArr : arr, x: 100, y: 100, r: 100, ir: 60, par: $par });
+    });
+
+    /**/
+    function drawSector(opts){
+        var $par = opts.par;
+        var dataArr = opts.dataArr;
+        var bgcolors = ["#5594E7", "#fff"];
+        var path, x0, y0, x1, y1, aa, cc=0, bb = 0;
+        var cx = opts.x, cy = opts.y, r = opts.r, ir = opts.ir;
+        var c1 = makeSVG("circle",{ cx: cx, cy: cy, r: r, fill : bgcolors[0] });
+        $par.append(c1);
+
+        var sum = 0;
+        for(var i= 0, len=dataArr.length; i<len; i++){
+            sum += dataArr[i];
+        }
+
+        var startAngle = -90;
+        var cc = startAngle;
+        for (var j = 0; j < dataArr.length; j++) {
+            if ( j < dataArr.length - 1) {
+                x0 = cx + r * Math.cos((cc * Math.PI) / 180);
+                y0 = cy + r * Math.sin((cc * Math.PI) / 180);
+                bb = dataArr[j];
+                //bb = bb + dataArr[j];
+                cc += bb / sum * 360;
+                x1 = cx + r * Math.cos((cc * Math.PI) / 180);
+                y1 = cy + r * Math.sin((cc * Math.PI) / 180);
+            } else {
+                x0 = cx + r * Math.cos((cc * Math.PI) / 180);
+                y0 = cy + r * Math.sin((cc * Math.PI) / 180);
+                x1 = cx + r * Math.cos((startAngle * Math.PI) / 180);
+                y1 = cy + r * Math.sin((startAngle * Math.PI) / 180);
+            }
+            var obj = {cx: cx, cy: cy, x0: x0, y0: y0, r: r, x1: x1, y1: y1};
+            if ((dataArr[j] / sum * 360) > 180) {
+                aa = 'M{cx} {cy}, L{x0} {y0}, A{r} {r} 0 1 1 {x1} {y1}, Z'.format(obj);
+            } else {
+                aa = 'M{cx} {cy}, L{x0} {y0}, A{r} {r} 0 0 1 {x1} {y1}, Z'.format(obj);
+            }
+            path = makeSVG('path', {
+                'd': aa,
+                'fill': getRandomColor(),
+                'stroke': '#fff',
+                'stroke-width': '2'
+            });
+            $par.append(path);
+        }
+
+        var c2 = makeSVG("circle",{
+            cx: cx,
+            cy: cy,
+            r: ir,
+            fill : bgcolors[1]
+        });
+        $par.append(c2);
+
+        $('path').mouseenter(function () {
+            $(this).css({'opacity': '.5'});
+        }).mouseleave(function () {
+            $(this).css({'opacity': '1'});
+        });
+    }
+
+    function makeSVG(tag, attrs) {
+        var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (var k in attrs)
+            el.setAttribute(k, attrs[k]);
+        return el;
+    }
+                                                                                                                 
+    // 获取随机颜色
+    function getRandomColor(){
+        var colors = '0123456789ABCDEF';
+        var str = "";
+        for (var i = 3; i > 0; i--) {
+            var index = parseInt(Math.floor(Math.random()*16), 10);
+            str += colors.substr(index, 1);
+        }
+        return "#" + str;
+    }
+
+</script>
+</body>
+</html>
