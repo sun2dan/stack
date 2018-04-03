@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>格式化卡号 - 4位一空格</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        body { padding: 20px; }
+        input { line-height: 40px; height: 40px; font-size: 16px; width: 400px; padding: 0 10px; }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <input type="text" placeholder="输入字母数字，四位加一个空格"/>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+    (function () {
+        console.log(split4('12345678901234567890'));
+        split4Num($("input"), function (res) {
+            console.log("最终值为:" + res);
+        });
+
+        function split4Num($txt, callback) {
+            var splitKey = "split4Num";
+            var pos = 0;
+            var prevTxt = "";
+            $txt = $($txt);
+
+            // 对象为空或者已经调用过该方法
+            if ($txt.length === 0 || $txt.data(splitKey)) {
+                return;
+            }
+            $txt.data(splitKey, true);
+            var obj = $txt.get(0);
+            obj.timer = null;
+            var defaultTxt = $txt.val();
+
+            // "input keyup" 两个事件相差100多ms；input在前
+            $txt.on("input", function (e) {
+                var $this = $(this);
+                clearTimeout(obj.timer);
+                obj.timer = setTimeout(function () {
+                    handle($this);
+                }, 10);
+            }).val(split4(defaultTxt));
+
+            function handle($this) {
+                var cardNo = $this.val();
+                var num = cardNo.replace(/\s+/gm, "");    // num 纯数字
+                cardNo = split4(num);
+
+                pos = getCursorPosition($this);
+                if (prevTxt.length < num.length) {  //之前的内容少，做了添加操作
+                    pos += parseInt(pos / 4);
+                } else if (pos % 5 === 0) {   //删除操作并且光标在空格后边
+                    pos -= 1;
+                }
+                $this.val(cardNo);
+                setCursorPosition($this, pos);
+                prevTxt = num;
+                callback && callback(num);
+            }
+        }
+
+        //获取光标位置
+        function getCursorPosition(ele) {
+            var ctrl = $(ele).get(0);
+            var carePos = 0;
+            if (document.selection) { // IE Support
+                ctrl.focus();
+                var Sel = document.selection.createRange();
+                Sel.moveStart('character', -ctrl.value.length);
+                carePos = Sel.text.length;
+            } else if (ctrl.selectionStart || ctrl.selectionStart == '0') {// Firefox support
+                carePos = ctrl.selectionStart;
+            }
+            return (carePos);
+        }
+
+        //设置光标位置
+        function setCursorPosition(ele, pos) {
+            var ctrl = $(ele).get(0);
+            if (ctrl.setSelectionRange) {
+                ctrl.focus();
+                ctrl.setSelectionRange(pos, pos);
+            } else if (ctrl.createTextRange) {
+                var range = ctrl.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', pos);
+                range.moveStart('character', pos);
+                range.select();
+            }
+        }
+
+        // 内容格式化 4位一空格   //$& 可以表示整个被匹配的字符串
+        function split4(str) {
+            // 去空格 - 分组 - 去结尾空格
+            var num = str.replace(/\s+/gmi, "").replace(/(\w{4})/gmi, "$1 ").replace(/\s+$/gmi, "");
+            return num;
+        }
+    })();
+</script>
+</body>
+</html>
