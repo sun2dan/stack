@@ -249,6 +249,13 @@
             return args[arguments[1]] + "";
         });
         return formatStr;
+
+        // getType 返回小写的类型
+        function getType(arg) {
+            var type = Object.prototype.toString.call(arg);
+            var result = type.replace(/\[object\s+(\w+)\]/gmi, "$1");
+            return result.toLowerCase();
+        }
     }
 </script>
 

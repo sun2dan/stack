@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8">
+    <title>format 函数 - 简单的字符串模板(添加对象嵌套的支持)</title>
+    <link href="../css/common.css" rel="stylesheet">
+    <style type="text/css">
+        body { padding: 0 15px 30px; }
+    </style>
+</head>
+<body>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+
+<script>
+    // getType 返回小写的类型
+    function getType(arg) {
+        var type = Object.prototype.toString.call(arg);
+        var result = type.replace(/\[object\s+(\w+)\]/gmi, "$1");
+        return result.toLowerCase();
+    }
+
+    // format 主函数
+    function format(tpl) {
+        var argLen = arguments.length;
+        if (argLen < 2) {
+            console.error("参数个数不够");
+            return;
+        }
+        var typeArr = ["array", "boolean", "string"];
+        var type = getType(tpl);
+
+        if (type !== typeArr[2]) {       // 普通情况
+            console.error("请检查传入参数，第一个参数类型不正确");
+            return;
+        }
+        var pattern = /\{([\w\-_\.\,\[\]\s\/]+)\}/gm;
+
+        // 如果模板字符串中有 {数字} 形式，并且第二个参数不是数组和对象，则认为是多参数 - 下标形式
+        var mts = tpl.match(pattern);
+        if (!mts || mts.length === 0) {
+            console.error("没有需要替换的字符串");
+            return;
+        }
+
+        var isMulIdx = true;    // 是否为多参数-下标模式
+        mts.forEach(function (item, i) {
+            if (!/^\{\d+\}$/gmi.test(item)) {
+                isMulIdx = false;
+            }
+        });
+
+        var data = Array.prototype.slice.call(arguments, 1);
+        var args = isMulIdx ? data : data[0];
+
+        var formatStr = tpl.replace(pattern, function () {
+            //console.log(arguments[1]);
+            return main(arguments[1], args);
+        });
+        return formatStr;
+
+        // 主处理函数
+        function main(key) {
+            key = key.replace(/(^\s+)|(\s+$)/gmi, "");
+            if (/for/gmi.test(key)) { // for 循环
+
+            } else if (/if/gmi.test(key)) { // if 判断
+
+            } else if (key.indexOf(".") > -1 || /\[\d+\]/gmi.test(key)) {
+                return single(key);
+            } else {
+                return args[key] || ""
+            }
+        }
+
+        // 基本语法
+        function single(key) {
+            var arr = key.split(".");
+            var tmp = args;
+            var curArr = []; // 当前已经执行过的key
+
+            arr.forEach(function (name, i) {
+                curArr.push(name);
+
+                if (/\[\d+\]/gmi.test(name)) { // 数组下标形式  arr[0][0]
+                    var indexArr = []; // 下标集合
+                    name = name.replace(/\[(\d+)\]/gmi, function () {
+                        indexArr.push(arguments[1]);
+                        return "";
+                    });
+                    tmp = tmp[name];
+                    indexArr.forEach(function (idx, i) {
+                        tmp = tmp[idx];
+                    });
+                } else {
+                    tmp = tmp[name];
+                }
+            });
+            return tmp || "";
+        }
+    }
+
+    $(function () {
+        var tpl = $("#tpl_1").html();
+        var data = {
+            name: "username",
+            arr2: [["0-0", "0-1"], ["1-0", "1-1"]],
+            arr3: [
+                [
+                    ["0-0-0", "0-0-1"],
+                    ["1-0-0", "1-0-1"],
+                    ["0-0-0", "0-0-1"]
+                ]
+            ],
+            more: {
+                addr: "address",
+                list: [{
+                    name: "list1",
+                    age: 12,
+                    info: {
+                        email: "email@jd.com"
+                    }
+                }]
+            }
+        };
+        var result = format(tpl, data);
+
+        // ……  方案2：直接转义出来，更简单 ……
+        window.data = data;
+        tpl = "'" + tpl + "'";
+        tpl = tpl.replace(/\s+/gmi, " ");
+        var pattern = /\{([\w\-_\.\,\[\]\s\/]+)\}/gm;
+        tpl = tpl.replace(pattern, "'+data.$1+'");
+        tpl = (new Function("return " + tpl))();
+
+        console.log(result, tpl);
+    });
+</script>
+
+<script type="text/template" id="tpl_1">
+    <ul>
+        <li>{name}</li>
+        <li>{more.addr}</li>
+        <li>{more.list[0].name}</li>
+        <li>{more.list[0].info.email}</li>
+        <li>{arr2[1][0]}</li>
+    </ul>
+</script>
+<script type="text/template" id="tpl_2">
+    <ul>
+        <li>{name}</li>
+        <li>{more.addr}</li>
+        <li>{more.list[0].name}</li>
+        <li>{more.list[0].info.email}</li>
+        <li>{arr2[1][0]}</li>
+        { for arr in arr2}
+        <li>
+            {for val,idx in arr}
+            {if idx>0}
+            <span>{val}</span>
+            {/if}
+            {/for}
+        </li>
+        <li>{name}</li>
+        { /for}
+    </ul>
+</script>
+
+</body>
+</html>
