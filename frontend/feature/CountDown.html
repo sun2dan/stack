@@ -1,0 +1,132 @@
+<html>
+<head>
+    <title>倒计时 - Go To New World</title>
+    <meta charset="utf-8">
+    <style type="text/css">
+        * {padding: 0; margin: 0; line-height: 1;}
+        .box { box-sizing: border-box; }
+        .progress {padding: 50px; width: 1200px; margin: 0 auto;}
+        .text-box { font-size: 14px; line-height: 1; padding: 10px 0; color: #666;}
+        .text-box span {font-size: 16px;color: #000; font-weight: bold; margin-right: 20px;}
+        .text-box span:nth-of-type(2n) {color: #f00;}
+        .prog {position: relative; height: 10px; background-color: #1f8; border-radius: 4px; overflow: hidden;}
+        .past {position: absolute; left: 0; top: 0; bottom: 0; background: #000;}
+        ul {position: relative; font-size: 0;}
+        li {position: relative;display: inline-block; font-size: 14px; text-align: center; border: 1px solid #333; margin: 0 -1px -1px 0; overflow: hidden; }
+        li.tog p { background-color: #C1E5CE;}
+        li.dis h4, li.dis p {opacity: .5;}
+        li.dis i {display: block;}
+        li.cur {background: #ffce39;}
+        li.cur p {background: #ffe186;}
+        li.cur h4 {border-top-color: #ffce39;}
+        i {display: none; z-index: 10; position: absolute; top: 0; left: 0; right: 0; width: 200%; height: 1px; transform-origin: left top; background-color: #f00;}
+        h4 {border-top: 1px solid #e5e5e5; font-size: 12px;padding: 5px;}
+        p {font-size: 10px; padding: 5px; background-color: #E5B8B2;}
+    </style>
+    <style type="text/css" id="custom_css"></style>
+</head>
+<body>
+
+<div class="box">
+    <div class="progress">
+        <div class="text-box">
+            已过：<span></span>
+            剩余：<span></span>
+            已过：<span></span>
+            剩余：<span></span>
+        </div>
+        <div class="prog">
+            <div class="past"></div>
+        </div>
+    </div>
+    <ul class="details">
+    </ul>
+</div>
+
+
+<script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script>
+    (function () {
+
+        // 18-07-23 --> 22-04-01
+        var startDate = new Date(2018, 6, 22);
+        var endDate = new Date(2022, 3, 1);
+        var sum = getSumDays();
+        var now = new Date();
+        now.setHours(0);
+        now.setMinutes(0);
+        now.setSeconds(0);
+        now.setMilliseconds(0);
+
+        $(function () {
+            main();
+        });
+
+        function main() {
+
+            var cur = new Date(startDate.getTime());
+            var str = "";
+
+            var curIndex = 0;
+            for (var i = sum; i >= 0; i--) {
+                var curDay = cur.getDate();
+                cur.setDate(++curDay);
+                var p = formatDate(cur);
+                var cls = cur.getFullYear() % 2 === 0 ? 'tog ' : '';
+                var n = cur - now;
+                if (n < 0) cls += 'dis';
+                else if (n === 0) cls += 'cur', curIndex = i;
+                str += '<li class="' + cls + '"><i></i><p>' + p + '</p><h4>' + i + '</h4></li>'
+            }
+            $(".details").append(str);
+            setExpired();
+            setProg(curIndex);
+        }
+
+        // 设置进度
+        function setProg(curIndex) {
+            curIndex -= 1;
+            var idx = sum - curIndex;
+            var pect = idx / sum;
+            $(".past").width($(".prog").width() * pect);
+
+            var ym = parseInt(curIndex / 365) + '年' + parseInt(parseInt(curIndex % 365) / 30) + '个月';
+
+            var r = 1 - pect;
+            var $spans = $(".text-box").find("span");
+            $spans.eq(0).text((pect * 100).toFixed(4) + '%');
+            $spans.eq(1).text((r * 100).toFixed(4) + '%');
+            $spans.eq(2).text(idx + '天');
+            $spans.eq(3).text(curIndex + '天 ≈ ' + ym);
+        }
+
+        // 设置过期样式
+        function setExpired() {
+            var $li = $(".details").find("li");
+            var w = $li.width();
+            var h = $li.height();
+            var deg = Math.atan2(h, w) * 100;
+            $("#custom_css").text('li.dis i{transform:rotate(' + (90 - deg) + 'deg)}');
+        }
+
+        // 格式化日期
+        function formatDate(date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            var d = date.getDate();
+            var ms = m < 10 ? "0" + m : m;
+            var ds = d < 10 ? "0" + d : d;
+            return y + "-" + ms + "-" + ds;
+        }
+
+        // 获取总天数
+        function getSumDays() {
+            var day = endDate - startDate;
+            var num = day / 1000 / 60 / 60 / 24;
+            console.log(num);
+            return num;
+        }
+    })();
+</script>
+</body>
+</html>
