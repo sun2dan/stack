@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>一种日历选择交互</title>
+  <link rel="stylesheet" href="../css/common.css"/>
+  <style type="text/css">
+    .page {margin: 0 20px; padding-top: 50px; min-width: 1200px;}
+    .main {display: inline-block; overflow: hidden; border: 1px solid #ccc;}
+    ul {position: relative;}
+    ul, li, .title {display: inline-block; font-size: 0; vertical-align: top;}
+    li {position: relative; width: 24px; height: 24px; line-height: 24px; margin: 0 1px; text-align: center; font-size: 14px;cursor: pointer; color: #333;border-radius: 100px; }
+    li.empty {cursor: default;}
+    li.active {color: #fff; background: #f00;}
+    li.dis {color: #ccc; cursor: default;}
+    .box, .head {font-size: 0;}
+    .title {position: relative; color: #999; height: 24px; line-height: 24px; font-size: 0;}
+    .title span {font-size: 14px; display: inline-block; vertical-align: top; text-align: center;}
+    .title span:first-of-type { width: 60px;}
+    .title span:last-of-type {width: 40px;}
+    /* 头 */
+    .head .title {background: #eee;}
+    .head ul {background: #eee;}
+    .head li:hover:after {content: ""; position: absolute; z-index: -1; left: 0; top: 0; width: 100%; height: 340px; background: #E5F5F9;}
+    .head li.dis:hover:after {display: none;}
+    .head ul:after, .head .title:after {content: ""; position: absolute; z-index: 10; top: 0; right: 0; width: 1px; height: 500px; background: #ccc; }
+    .head ul:before {content: ""; position: absolute; font-size: 200px; font-family: Arial; font-weight: bold; font-style: italic; z-index: -1; top: 0; width: 100%; height: 340px; color: rgba(245, 245, 245, .8); text-align: center; line-height: 340px;}
+    .head ul:nth-of-type(1):before {content: "1";}
+    .head ul:nth-of-type(2):before {content: "2";}
+    .head ul:nth-of-type(3):before {content: "3";}
+    .head ul:nth-of-type(4):before {content: "4";}
+    .head ul:nth-of-type(5):before {content: "5";}
+    .head ul:nth-of-type(6):before {content: "6";}
+    /* 日历*/
+    .month {position: relative; margin: 2px 0;}
+    .month:hover {background: #E5F5F9;}
+    .month li:hover:after {z-index: -1; background: #E5F5F9; content: ""; position: absolute; left: 0; top: -400px; bottom: -400px; right: 0;}
+    .month li.dis:hover:after {display: none;}
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="main">
+    <div class="head">
+    </div>
+    <div class="box">
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script>
+  /**
+   * 需求描述：每月选择一个天，大家聚会“吃饭”；
+   * 可以进行批量设置（多选），比如设置每月第三周的周一吃饭；也可以只设置下个月的（单选）；最多可设置之后一年的时间；
+   * */
+  (function () {
+    var c = "click";
+    var a = "active";
+
+    $(function () {
+      window.FastClick && FastClick.attach(document.body);
+      fillHead();
+      fillCale();
+      pageInit();
+    });
+
+    function pageInit() {
+      var curSelIdx = -1;    // 当前全选的下标
+
+      $("body").on(c, ".month li:not(.empty):not(.dis)", function () {
+        $(this).toggleClass(a).siblings().removeClass(a);
+        curSelIdx = -1; // 取消全选状态
+      }).on(c, ".head li:not(.dis)", function () { // 点击头部全选
+        var ulIdx = $(this).parent().index();
+        var idx = $(this).index();
+        var realIdx = (ulIdx - 1) * 7 + idx;
+        var method = "removeClass";
+        if (curSelIdx === -1 || (curSelIdx !== realIdx)) {
+          method = "addClass";
+          curSelIdx = realIdx;
+        } else curSelIdx = -1;
+
+        var $month = $(".month");
+        $month.find("li.active").removeClass(a);
+        $month.each(function (i, item) {
+          $(item).find("li").eq(realIdx)[method](a);
+          $("li.active.empty,li.active.dis").removeClass(a);
+        });
+      });
+    }
+
+    // 生成头
+    function fillHead() {
+      var weeks = ["日", "一", "二", "三", "四", "五", "六"];
+      var arr1 = ["<p class='title'><span>年月</span><span>时间</span></p>"];
+      for (var i = 0; i < 5; i++) {
+        arr1.push('<ul>');
+        weeks.forEach(function (item, i) {
+          var cls = i === 0 || i === 6 ? "dis" : "";
+          arr1.push('<li class="' + cls + '">' + weeks[i] + '</li>');
+        });
+        arr1.push('</ul>');
+      }
+      // 最后一周有值的天数最多两个，不一定非得显示七天，有点儿浪费空间
+      arr1.push('<ul>');
+      for (i = 0; i < 5; i++) {
+        var cls = i === 0 || i === 6 ? "dis" : "";
+        arr1.push('<li class="' + cls + '">' + weeks[i] + '</li>');
+      }
+      arr1.push('</ul>');
+      $(".head").html(arr1.join(""));
+    }
+
+    // 生成日历
+    function fillCale() {
+      var arr = [];
+      var now = new Date();
+      var month = now.getMonth();
+
+      for (var i = 0; i < 12; i++) {
+        var ts = new Date(now.getFullYear(), month++, 1);
+        var str = getMonthStr(new Date(ts));
+        arr.push(str);
+      }
+      $(".box").html(arr.join(""));
+    }
+
+    // 生成月份字符串
+    function getMonthStr(date) {
+      var holidays = getHolidays();
+      var year = date.getFullYear();
+      var month = date.getMonth() + 1;
+      month = month > 9 ? month : "0" + month;
+      var str = '<div class="month"><p class="title"><span>' + year + '-' + month + '</span><span>18:00</span></p><ul>';
+
+      var first = new Date(date.getTime());
+      first.setDate(1);
+      var week = first.getDay();
+      for (var i = 0; i < week; i++) str += '<li class="empty"></li>';
+
+      var days = getDays(date);
+      for (i = 0; i < days; i++) {
+        var curWeek = new Date(year, month - 1, i + 1).getDay();
+        var cls = curWeek === 0 || curWeek === 6 || inHoliday(i + 1) ? "dis" : "";
+        str += '<li class="' + cls + '">' + (i + 1) + '</li>';
+      }
+      str += '</ul></div>';
+      return str;
+
+      function inHoliday(d) {
+        for (var i = 0, len = holidays.length; i < len; i++) {
+          var obj = holidays[i];
+          if (obj.m === +month && obj.d === d) {
+            if (obj.y === 0 || obj.y === year) return true;
+          }
+        }
+        return false;
+      }
+    }
+
+    /**
+     * 获取节假日
+     *  y-0 每年都是这样，比如10.1放七天
+     *  农历节假日，y是固定的，每年不一样；
+     * */
+    function getHolidays() {
+      return [
+        {y: 2018, m: 9, d: 24}, // 中秋节
+        {y: 0, m: 10, d: 1},
+        {y: 0, m: 10, d: 2},
+        {y: 0, m: 10, d: 3},
+        {y: 0, m: 10, d: 4},
+        {y: 0, m: 10, d: 5},
+        {y: 0, m: 10, d: 6},
+        {y: 0, m: 10, d: 7}
+      ];
+    }
+
+    function getDays(date) {
+      var arr = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      var m = date.getMonth();
+      var cur = new Date(date.getFullYear(), m, 29);
+      if (cur.getMonth() === 1) arr[1] = 29;
+      return arr[m];
+    }
+  })();
+</script>
+</body>
+</html>
