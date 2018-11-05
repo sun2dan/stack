@@ -26,10 +26,11 @@
         return res + (arr[1] ? "." + arr[1] : "");
     }
 
-    var amo = formatAmount(1234567890);
+    var num = 1234567890;
+    var amo = formatAmount(num);
     console.log(amo);
 
-    console.log(amo.toLocaleString("en_us"));
+    console.log(num.toLocaleString("en-US"));
 </script>
 </body>
 </html>
