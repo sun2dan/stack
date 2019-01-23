@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>youtube-helper favicon</title>
+  <link href="../css/common.css" rel="stylesheet">
+  <style type="text/css">
+    svg {display: block;width: 100px; height: 100px; margin: 0 auto; background: #fff; border: 0px solid #ccc;}
+    img {width: 100px; height: 100px;}
+    h2 {font-size: 18px; padding: 20px; text-align: center;}
+    a {text-decoration: underline;}
+  </style>
+</head>
+<body>
+
+<h2>youtube-helper favicon</h2>
+<svg id="svg_icon">
+  <path d="M20 45 L20 90 M20 65 L80 65 M80 45 L80 90" stroke="#F50804" stroke-width="14"></path>
+</svg>
+
+<svg id="svg_icon1">
+  <path d="M20 45 L20 90 M20 65 L80 65 M80 45 L80 90" stroke="#F50804" stroke-width="5"></path>
+  <path d="M0 0 L48 40 L52 40 L100 0 " fill="#fff" stroke="#F50804" stroke-width="6"></path>
+  <path d="M48 40 L52 40 L52 94 L48 94 Z" fill="#F50804" stroke="#F50804" stroke-width="1"></path>
+  <path d="M48 94 L52 94 L54 100 L46 100 Z" fill="#F50804" stroke="#F50804" stroke-width="1"></path>
+</svg>
+
+<img src="youtube-helper.svg" alt="">
+
+</body>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+
+<script>
+  (function () {
+    var dis = 100;
+    var half = dis / 2;
+    var lineW = 16;
+    var lineW2 = lineW / 2;
+    var vert = 40;
+    var vert2 = 94;
+    var btmW = 22;
+    var btmW2 = btmW / 2;
+
+    var arr1 = [
+      [0, 0],
+      [half - lineW2, vert], [half + lineW2, vert],
+      [100, 0]
+    ];
+    var arr2 = [
+      arr1[1], arr1[2],
+      [half + lineW2, vert2], [half - lineW2, vert2]
+    ];
+    var arr3 = [
+      arr2[3], arr2[2],
+      [half + btmW2, dis], [half - btmW2, dis]
+    ];
+
+    var red = '#F50804';
+    var fill = red;
+    var stroke = red;
+    var strokeWidth = 1;
+    var svg = document.getElementById("svg_icon");
+    [arr1, arr2, arr3].forEach(function (arr, i) {
+      var dstr = '';
+      arr.forEach(function (pos, j) {
+        dstr += (j === 0 ? 'M' : 'L') + pos[0] + ' ' + pos[1] + ' ';
+      });
+      if (i === 0) {
+        fill = 'none';
+        strokeWidth = 16;
+      } else {
+        fill = red;
+        dstr += 'Z';
+        strokeWidth = 1;
+      }
+      console.log(dstr);
+      var ele = createElement('path');
+
+      ele._prop('d', dstr)._prop('fill', fill)._prop('stroke', stroke)._prop('stroke-width', strokeWidth);
+      svg.appendChild(ele);
+    });
+
+    // 创建元素
+    function createElement(tagName) {
+      var element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+      element._prop = function (name, value) {
+        this.setAttribute(name, value);
+        return this;
+      };
+      return element;
+    }
+
+
+    var data = 'data:image/svg+xml,' + $('#svg_icon1').get(0).outerHTML;
+    $("#img").attr('src', data)
+  })();
+</script>
+
+</html>
