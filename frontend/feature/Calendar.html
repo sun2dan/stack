@@ -21,14 +21,13 @@
     .title {position: relative; color: #999; height: 24px; line-height: 24px; font-size: 0;}
     .title span {font-size: 14px; display: inline-block; vertical-align: top; text-align: center;}
     .title span:first-of-type { width: 60px;}
-    .title span:last-of-type {width: 40px;}
     /* 头 */
     .head .title {background: #eee;}
     .head ul {background: #eee;}
     .head li:hover:after {content: ""; position: absolute; z-index: -1; left: 0; top: 0; width: 100%; height: 340px; background: #E5F5F9;}
     .head li.dis:hover:after {display: none;}
     .head ul:after, .head .title:after {content: ""; position: absolute; z-index: 10; top: 0; right: 0; width: 1px; height: 500px; background: #ccc; }
-    .head ul:before {content: ""; position: absolute; font-size: 200px; font-family: Arial; font-weight: bold; font-style: italic; z-index: -1; top: 0; width: 100%; height: 340px; color: rgba(245, 245, 245, .8); text-align: center; line-height: 340px;}
+    .head ul:before {content: ""; position: absolute; font-size: 200px; font-family: Arial; font-weight: bold; font-style: italic; z-index: -1; top: 0; width: 100%; height: 340px; color: rgba(245, 245, 245, .95); text-align: center; line-height: 340px;}
     .head ul:nth-of-type(1):before {content: "1";}
     .head ul:nth-of-type(2):before {content: "2";}
     .head ul:nth-of-type(3):before {content: "3";}
@@ -97,7 +96,7 @@
     // 生成头
     function fillHead() {
       var weeks = ["日", "一", "二", "三", "四", "五", "六"];
-      var arr1 = ["<p class='title'><span>年月</span><span>时间</span></p>"];
+      var arr1 = ["<p class='title'><span>年月</span></p>"];
       for (var i = 0; i < 5; i++) {
         arr1.push('<ul>');
         weeks.forEach(function (item, i) {
@@ -136,7 +135,7 @@
       var year = date.getFullYear();
       var month = date.getMonth() + 1;
       month = month > 9 ? month : "0" + month;
-      var str = '<div class="month"><p class="title"><span>' + year + '-' + month + '</span><span>18:00</span></p><ul>';
+      var str = '<div class="month"><p class="title"><span>' + year + '-' + month + '</span></p><ul>';
 
       var first = new Date(date.getTime());
       first.setDate(1);
