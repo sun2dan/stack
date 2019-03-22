@@ -21,9 +21,9 @@
     </svg>
 </div>
 
-<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="../js/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
-    /*                              
+    /*
      使用 CSS 控制 SVG：
      svg规范将属性分为properties 和 attributes，properties可用CSS设置，后者不能；
      http://www.w3.org/TR/SVG/propidx.html
@@ -86,7 +86,7 @@
 
             poly._prop("stroke", "#fff")._prop("stroke-width", ".5")._prop("points", str)._prop("fill", fill)._prop("pname", name)._prop("", "");
             svg.appendChild(poly);
-            
+
             poly.onmouseover = function () {
                 console.log(123);
             };

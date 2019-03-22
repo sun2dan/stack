@@ -24,7 +24,7 @@
     </svg>
 </div>
 
-<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="../js/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
     console.log("SVG 画出闭合多边形，周长为1，可按照百分比显示周长");
     $(function () {
@@ -33,7 +33,7 @@
         var prec = .9;    // 百分比
         var target = prec * length;
         var cur = 0;
-        
+
         var timer = setInterval(function () {
             cur += 5;
             if (cur >= target) clearInterval(timer);
