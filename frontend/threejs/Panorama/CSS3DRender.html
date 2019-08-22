@@ -26,23 +26,16 @@
   var phi = 0, theta = 0;
   var touchX, touchY;
 
-  // 六个面的 排列顺序/对应关系
-  var posMap = {
-    0: 'right',
-    1: 'left',
-    2: 'up',
-    3: 'down',
-    4: 'front',
-    5: 'back'
-  };
   var imageArr = {
-    "up": "../images/threejs/posy.jpg",
-    "down": "../images/threejs/negy.jpg",
-    "right": "../images/threejs/posx.jpg",
-    "left": "../images/threejs/negx.jpg",
-    "front": "../images/threejs/posz.jpg",
-    "back": "../images/threejs/negz.jpg"
+    "up": "../../images/threejs/posy.jpg",
+    "down": "../../images/threejs/negy.jpg",
+    "right": "../../images/threejs/posx.jpg",
+    "left": "../../images/threejs/negx.jpg",
+    "front": "../../images/threejs/posz.jpg",
+    "back": "../../images/threejs/negz.jpg"
   };
+  // 六个面的 排列顺序/对应关系
+  var posMap = {0: 'right', 1: 'left', 2: 'up', 3: 'down', 4: 'front', 5: 'back'};
   var sides = [{
     url: '',
     position: [-512, 0, 0],
