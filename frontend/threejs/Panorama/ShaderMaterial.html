@@ -68,22 +68,22 @@
   }
 
   function createSkyBox() {
-    var skyboxCubemap = new THREE.CubeTextureLoader().load(urls);
-    skyboxCubemap.format = THREE.RGBFormat;
+    var texture = new THREE.CubeTextureLoader().load(urls);
 
-    var skyboxShader = JSON.parse(JSON.stringify(THREE.ShaderLib['cube']));
-    skyboxShader.uniforms['tCube'].value = skyboxCubemap;
-    skyboxShader.uniforms['opacity'].value = 1;
+    var shader = JSON.parse(JSON.stringify(THREE.ShaderLib['cube']));
+    shader.uniforms['tCube'].value = texture;
+    shader.uniforms['opacity'].value = 1;
 
     var shaderMaterial = new THREE.ShaderMaterial({
-      fragmentShader: skyboxShader.fragmentShader,
-      vertexShader: skyboxShader.vertexShader,
-      uniforms: skyboxShader.uniforms,
+      fragmentShader: shader.fragmentShader,
+      vertexShader: shader.vertexShader,
+      uniforms: shader.uniforms,
       side: THREE.BackSide
     });
 
     var size = 1000;
     var skyBox = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), shaderMaterial);
+    //skyBox.geometry.scale(1, 1, -1);
     skyBox.name = 'skyBox';
 
     scene.add(skyBox);

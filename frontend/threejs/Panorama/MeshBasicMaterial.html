@@ -67,7 +67,7 @@
 
   function createSkyBox() {
     var materials = [];
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < urls.length; i++) {
       var texture = new THREE.TextureLoader().load(urls[i]);
       var material = new THREE.MeshBasicMaterial({map: texture, transparent: true, opacity: 1});
       material.opacity = .99;  // 改变透明度
