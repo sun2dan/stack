@@ -5,7 +5,7 @@
   <meta name="format-detection" content="telephone=no"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta charset="utf-8">
-  <title>全景图-scene背景图方案</title>
+  <title>全景图-Scene背景图方案</title>
   <style type="text/css">
     html, body {width: 100%;height: 100%;margin: 0;padding: 0;overflow: hidden;}
   </style>
@@ -14,6 +14,7 @@
 
 <!-- scene 背景图方案
  demo: https://threejs.org/examples/webgl_materials_cubemap.html
+       https://threejs.org/examples/webgl_materials_variations_basic.html
  -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
 <script>
@@ -42,16 +43,12 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
     scene = new THREE.Scene();
-    setSceneBg();
-    addOthers();
-
     document.body.appendChild(renderer.domElement);
 
-    document.addEventListener('mousedown', onDocumentMouseDown, false);
-    document.addEventListener('wheel', onDocumentMouseWheel, false);
+    setSceneBg();
+    addOthers();
+    bindEvent();
     window.addEventListener('resize', onWindowResized, false);
-    document.addEventListener('touchstart', onDocumentTouchStart, false);
-    document.addEventListener('touchmove', onDocumentTouchMove, false);
   }
 
   // background
@@ -71,11 +68,9 @@
   function addOthers() {
     var greenMaterial = new THREE.MeshNormalMaterial({color: 0x00ff00, transparent: true, opacity: 1});
     greenMaterial.setValues({opacity: .8});
-
-    // 添加方块
-    var geometry = new THREE.BoxGeometry(50, 50, 50);
+    var geometry = new THREE.BoxGeometry(20, 20, 20);
     var cube = new THREE.Mesh(geometry, greenMaterial);
-    cube.position.fromArray([-500, 0, 0]);
+    cube.position.fromArray([-200, 0, 0]);
     cube.rotation.fromArray([Math.PI / 4, Math.PI / 4, Math.PI / 4]);
     scene.add(cube);
   }
@@ -84,6 +79,31 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // lon += .15;
+    lat = Math.max(-85, Math.min(85, lat));
+    phi = THREE.Math.degToRad(90 - lat);
+    theta = THREE.Math.degToRad(lon);
+    camera.position.x = 100 * Math.sin(phi) * Math.cos(theta);
+    camera.position.y = -100 * Math.cos(phi);
+    camera.position.z = 100 * Math.sin(phi) * Math.sin(theta);
+
+    camera.lookAt(scene.position);
+    renderer.render(scene, camera);
+  }
+
+  /**================================================================
+   以下代码可用 ../js/threejs/OrbitControls.js 代替
+   =================================================================*/
+  function bindEvent() {
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
+    document.addEventListener('wheel', onDocumentMouseWheel, false);
+    document.addEventListener('touchstart', onDocumentTouchStart, false);
+    document.addEventListener('touchmove', onDocumentTouchMove, false);
   }
 
   function onDocumentMouseDown(event) {
@@ -131,22 +151,6 @@
     touchY = touch.screenY;
   }
 
-  function animate() {
-    requestAnimationFrame(animate);
-    render();
-  }
-
-  function render() {
-    // lon += .15;
-    lat = Math.max(-85, Math.min(85, lat));
-    phi = THREE.Math.degToRad(90 - lat);
-    theta = THREE.Math.degToRad(lon);
-    camera.position.x = 100 * Math.sin(phi) * Math.cos(theta);
-    camera.position.y = -100 * Math.cos(phi);
-    camera.position.z = 100 * Math.sin(phi) * Math.sin(theta);
-
-    camera.lookAt(scene.position);
-    renderer.render(scene, camera);
-  }
-
 </script>
+</body>
+</html>
