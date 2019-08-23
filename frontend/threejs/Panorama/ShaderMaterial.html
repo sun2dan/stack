@@ -90,7 +90,7 @@
   }
 
   function addOthers() {
-    var greenMaterial = new THREE.MeshNormalMaterial({color: 0x00ff00, transparent: true, opacity: 1});
+    var greenMaterial = new THREE.MeshNormalMaterial({transparent: true, opacity: 1});
     greenMaterial.setValues({opacity: .8});
     var geometry = new THREE.BoxGeometry(20, 20, 20);
     var cube = new THREE.Mesh(geometry, greenMaterial);

@@ -13,6 +13,7 @@
 <body>
 
 <!-- MeshFaceMaterial 方案
+  MeshFaceMaterial 已过期，修改后和 MeshBasicMaterial 方案一致
  demo: https://threejs.org/examples/webgl_materials_envmaps.html
  -->
 
@@ -69,20 +70,19 @@
     var materialArray = [];
     for (var i = 0; i < 6; i++)
       materialArray.push(new THREE.MeshBasicMaterial({
-        map: THREE.ImageUtils.loadTexture(urls[i]),
+        map: new THREE.TextureLoader().load(urls[i]),
         side: THREE.BackSide   // 镜像翻转
       }));
-    var skyMaterial = new THREE.MeshFaceMaterial(materialArray);
 
     var size = 1000;
-    var skyBox = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), skyMaterial);
+    var skyBox = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), materialArray);
     skyBox.scale.x = -1; // 再翻转
 
     scene.add(skyBox);
   }
 
   function addOthers() {
-    var greenMaterial = new THREE.MeshNormalMaterial({color: 0x00ff00, transparent: true, opacity: 1});
+    var greenMaterial = new THREE.MeshNormalMaterial({transparent: true, opacity: 1});
     greenMaterial.setValues({opacity: .8});
     var geometry = new THREE.BoxGeometry(20, 20, 20);
     var cube = new THREE.Mesh(geometry, greenMaterial);
