@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta charset="utf-8">
+  <title>WebGL demo2 - click and draw</title>
+  <style type="text/css">
+    html, body {width: 100%;height: 100%;color: #fff;margin: 0;padding: 0;overflow: hidden;}
+    pre {display: none;}
+  </style>
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+
+<pre class="vertex" id="tpl_vertex">
+attribute vec4 a_Position;
+void main(){
+  gl_Position = a_Position;
+  gl_PointSize = 10.0;
+}
+</pre>
+<pre class="fragment" id="tpl_frag">
+void main(){
+  gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+}
+</pre>
+
+<script src="js/webgl-utils.js"></script>
+<script src="js/webgl-debug.js"></script>
+<script src="js/cuon-utils.js"></script>
+<script type="text/javascript">
+  var vertex = document.getElementById('tpl_vertex').innerHTML;
+  var frag = document.getElementById('tpl_frag').innerHTML;
+  var points = [];
+
+  main();
+
+  function main() {
+    var canvas = document.getElementById('webgl');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var gl = canvas.getContext('webgl', {antialias: false, depth: false});
+    //var gl = getWebGLContext(canvas);
+
+    if (!initShaders(gl, vertex, frag)) return console.log('Failed to intialize shaders.');
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    if (a_Position < 0) return console.log('Failed to get the storage location of a_Position');
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    canvas.onmousemove = function (ev) {
+      var target = ev.target;
+      var left = target.offsetLeft;
+      var top = target.offsetTop;
+      var x = ev.clientX - left;
+      var y = ev.clientY - top;
+      var midW = canvas.width / 2;
+      var midH = canvas.height / 2;
+      var actual = {x: (x - midW) / midW, y: (midH - y) / midH}; // 转换为webgl坐标
+
+      /*var x = ev.clientX; // x coordinate of a mouse pointer
+      var y = ev.clientY; // y coordinate of a mouse pointer
+      var rect = ev.target.getBoundingClientRect();
+      x = ((x - rect.left) - canvas.width / 2) / (canvas.width / 2);
+      y = (canvas.height / 2 - (y - rect.top)) / (canvas.height / 2);
+      var actual = {x: x, y: y};*/
+
+      points.push(actual);
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      points.forEach(function (item, i) {
+        gl.vertexAttrib2f(a_Position, item.x, item.y);
+        gl.drawArrays(gl.POINTS, 0, 1);
+      });
+    };
+  }
+</script>
+</body>
+</html>
