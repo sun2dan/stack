@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>特殊情况</title>
+</head>
+<body>
+
+<script>
+  /**
+   * 特殊情况：
+   * 1、test3中，如果服务器只在预检请求中返回 Access-Control-Allow-Origin: Content-Type，接口也是可以访问的；
+   * 2、test4中，如果服务器在真实请求中没有返回 'Access-Control-Allow-Credentials': true，浏览器端虽然报错，但是也返回了数据
+   * */
+  main();
+  main1();
+  main2();
+
+  function main() {
+    var url = '//b.test.com:8096/demo1';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.group('b.test.com:8096/demo1');
+        console.log('返回结果：', xhr.response);
+        console.groupEnd();
+      }
+    };
+    xhr.send();
+  }
+
+  function main1() {
+    var url = '//server.com:8096/demo2';
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.group('server.com:8096/demo2');
+        console.log('返回结果：', xhr.response);
+        console.groupEnd();
+      }
+    };
+    xhr.send();
+  }
+
+  function main2() {
+    var url = '//server.com:8096/demo3';
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.group('server.com:8096/demo3');
+        console.log('返回结果：', xhr.response);
+        console.groupEnd();
+      }
+    };
+    xhr.send();
+  }
+</script>
+
+</body>
+</html>

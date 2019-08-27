@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>带cookie，复杂请求</title>
+</head>
+<body>
+
+<script>
+  main();
+  main1();
+
+  function main() {
+    var url = '//b.test.com:8091';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.group('b.test.com:8091');
+        console.log('返回结果：', xhr.response);
+        console.log('请求时带了cookie');
+        console.groupEnd();
+      }
+    };
+    xhr.send();
+  }
+
+  function main1() {
+    var url = '//server.com:8091';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.group('server.com:8091');
+        console.log('返回结果：', xhr.response);
+        console.log('请求时没有带cookie');
+        console.groupEnd();
+      }
+    };
+    xhr.send();
+  }
+</script>
+
+</body>
+</html>

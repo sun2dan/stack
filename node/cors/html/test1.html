@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>不带cookie，简单请求</title>
+</head>
+<body>
+
+<script>
+  var xhr = new XMLHttpRequest();
+  var url = '//server.com:8091';
+  xhr.open('POST', url, true);
+  xhr.onreadystatechange = function () {
+    console.log(xhr.readyState, xhr.status, xhr.responseText);
+  };
+  xhr.send();
+</script>
+
+</body>
+</html>
