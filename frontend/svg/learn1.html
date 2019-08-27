@@ -201,6 +201,43 @@
         }
     })();
 
+    /**================================================================
+     贝塞尔曲线
+    =================================================================*/
+    String.prototype.format = function () {
+      var pattern = /\{([\w\-_]+)\}/gm;
+      var args = /\{(\d+)\}/.test(this) ? arguments : arguments[0];
+      var format = this.replace(pattern, function () {
+        return args[arguments[1]];
+      });
+      return format;
+    };
+    main();
+    function main() {
+        var path = $("#path_main").get(0);
+        var line1 = $("#path_line1").get(0);
+        var line2 = $("#path_line2").get(0);
+        var circle = $("#circle").get(0);
+        var cx = 300;
+        var y = 170;  //控制点y坐标
+        var range = [0, 400];
+        var flag = true;
+
+        var timer = setInterval(function () {
+            var x = flag ? cx-- : cx++;
+            if (x <= range[0]) {
+                flag = false
+            } else if (x >= range[1]) {
+                flag = true;
+            }
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            line1.setAttribute("d", "M150 0L{x} {y}".format({x: cx, y: y}));
+            line2.setAttribute("d", "M150 300L{x} {y}".format({x: cx, y: y}));
+            path.setAttribute("d", "M150 0Q{x} {y} 150 300".format({x: cx, y: y}));
+        }, 10);
+    }
+
 </script>
 </body>
 </html>
