@@ -58,7 +58,7 @@ void main(){
     if (a_Position < 0) console.log('获取失败');
 
     // 将顶点位置传输给 attribute 变量
-    gl.vertexAttrib4f(a_Position, 1, 1, 0.0, 1.0);
+    gl.vertexAttrib4f(a_Position, 0.1, 0.1, 0.0, 1.0);
     gl.vertexAttrib1f(a_PointSize, 20.0);
 
     // 设置canvas背景色
