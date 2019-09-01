@@ -55,13 +55,14 @@ void main(){
     var gl = canvas.getContext('webgl', {antialias: false, depth: false});
     //var gl = getWebGLContext(canvas);
 
-    if (!initShaders(gl, vertex, frag)) return console.log('Failed to intialize shaders.');
+    if (!initShaders(gl, vertex, frag)) return console.log('Failed to initialize shaders.');
 
     // 获取顶点着色器变量 attribute
     var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
     // 获取片元着色器变量 uniform
     var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-    if (a_Position < 0 || u_FragColor < 0) return console.log('Failed to get the storage location of a_Position/u_FragColor');
+    if (a_Position < 0 ) return console.log('Failed to get the storage location of a_Position');
+    if(!u_FragColor) return console.log('Failed to get the storage location of u_FragColor');
 
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
