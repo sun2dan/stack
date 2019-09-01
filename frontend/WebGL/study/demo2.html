@@ -15,15 +15,25 @@
 <canvas id="webgl"></canvas>
 
 <pre class="vertex" id="tpl_vertex">
-attribute vec4 a_Position;
+attribute vec4 a_Position1;  // 2
+attribute vec4 a_Position0;  // 0
+attribute vec4 a_Position;   // 1
 void main(){
+  gl_Position = a_Position0;
+  gl_Position = a_Position1;
   gl_Position = a_Position;
   gl_PointSize = 10.0;
 }
 </pre>
 <pre class="fragment" id="tpl_frag">
+precision mediump float;
+uniform vec4 u_FragColor1;
+uniform vec4 u_FragColor0;
+uniform vec4 u_FragColor;
 void main(){
-  gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+  gl_FragColor = u_FragColor1;
+  gl_FragColor = u_FragColor0;
+  gl_FragColor = u_FragColor;
 }
 </pre>
 
@@ -34,7 +44,7 @@ void main(){
 <script type="text/javascript">
   var vertex = document.getElementById('tpl_vertex').innerHTML;
   var frag = document.getElementById('tpl_frag').innerHTML;
-  var points = [];
+  var points = [], colors = [];
 
   main();
 
@@ -47,21 +57,24 @@ void main(){
 
     if (!initShaders(gl, vertex, frag)) return console.log('Failed to intialize shaders.');
 
+    // 获取顶点着色器变量 attribute
     var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-    if (a_Position < 0) return console.log('Failed to get the storage location of a_Position');
+    // 获取片元着色器变量 uniform
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+    if (a_Position < 0 || u_FragColor < 0) return console.log('Failed to get the storage location of a_Position/u_FragColor');
 
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     canvas.onmousemove = function (ev) {
       var target = ev.target;
-      var left = target.offsetLeft;
-      var top = target.offsetTop;
-      var x = ev.clientX - left;
-      var y = ev.clientY - top;
-      var midW = canvas.width / 2;
-      var midH = canvas.height / 2;
-      var actual = {x: (x - midW) / midW, y: (midH - y) / midH}; // 转换为webgl坐标
+
+      // canvas坐标系转webgl坐标系
+      var left = target.offsetLeft, top = target.offsetTop;
+      var x0 = ev.clientX - left, y0 = ev.clientY - top;
+      var midW = canvas.width / 2, midH = canvas.height / 2;
+      var x = (x0 - midW) / midW, y = (midH - y0) / midH;
+      var actual = {x: x, y: y};
 
       /*var x = ev.clientX; // x coordinate of a mouse pointer
       var y = ev.clientY; // y coordinate of a mouse pointer
@@ -72,10 +85,23 @@ void main(){
 
       points.push(actual);
 
+      // 根据坐标设置不同的颜色
+      if (x >= 0 && y >= 0) {
+        colors.push([1, 1, 0, 1]);
+      } else if (x < 0 && y < 0) {
+        colors.push([0, 1, 0, 1])
+      } else if (x > 0 && y < 0) {
+        colors.push([0, 0, 1, 1]);
+      } else {
+        colors.push([1, 0, 0, 1]);
+      }
+
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       points.forEach(function (item, i) {
         gl.vertexAttrib2f(a_Position, item.x, item.y);
+        var color = colors[i];
+        gl.uniform4f(u_FragColor, color[0], color[1], color[2], color[3]);
         gl.drawArrays(gl.POINTS, 0, 1);
       });
     };
