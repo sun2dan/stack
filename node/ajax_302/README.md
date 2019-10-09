@@ -4,7 +4,7 @@
 ## 运行
 ### 需要配置的hosts：
 ```
-127.0.0.1 test.com a.test.com b.test.com server.com
+127.0.0.1 test.com
 ```
 
 ### 运行步骤：
