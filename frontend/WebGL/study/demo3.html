@@ -62,17 +62,13 @@ void main(){
       var x0 = ev.clientX - left, y0 = ev.clientY - top;
       var midW = canvas.width / 2, midH = canvas.height / 2;
       var x = (x0 - midW) / midW, y = (midH - y0) / midH;
+
       points.push({x: x, y: y});
       // 根据坐标设置不同的颜色
-      if (x >= 0 && y >= 0) {
-        colors.push([1, 1, 0, 1]);
-      } else if (x < 0 && y < 0) {
-        colors.push([0, 1, 0, 1])
-      } else if (x > 0 && y < 0) {
-        colors.push([0, 0, 1, 1]);
-      } else {
-        colors.push([1, 0, 0, 1]);
-      }
+      if (x >= 0 && y >= 0) colors.push([1, 1, 0, 1]);
+      else if (x < 0 && y < 0) colors.push([0, 1, 0, 1]);
+      else if (x > 0 && y < 0) colors.push([0, 0, 1, 1]);
+      else colors.push([1, 0, 0, 1]);
 
       gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -89,14 +85,21 @@ void main(){
       if (n === 0) return alert('请选择点');
       gl.clear(gl.COLOR_BUFFER_BIT);
 
-      var type = gl.POINTS;
-      if (n === 3) type = gl.TRIANGLES;
+      // gl.POINTS, gl.LINES, gl.LINE_LOOP, gl.LINE_STRIP, gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN
+      var type = (n - 1) % 7; // gl.POINTS -> gl.TRANGLE_FAN 的值为0-6
 
       // 设置顶点位置
       initVertexBuffers();
+
+      // 绘制
       gl.drawArrays(type, 0, n);
 
+      // 如果url中配置了invalid(失效)，则不关闭变量，展示失效的效果
+      if (!/invalid$/.test(location.href))
+        gl.disableVertexAttribArray(a_Position);
+
       points = [];
+      colors = [];
     };
 
     // 设置缓冲区对象
