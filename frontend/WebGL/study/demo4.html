@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>WebGL demo4 - draw Rectangle</title>
+  <style>
+    body {margin: 0; overflow: hidden;}
+    pre {display: none;}
+    div {position: absolute; left: 50%; top: 20px; transform: translate(-50%, 0); height: 20px; padding: 5px 10px; white-space: nowrap; line-height: 20px; text-align: center; border: none; outline: none; background: #fff;}
+  </style>
+</head>
+<body>
+
+<div id="div_res">绘制</div>
+<canvas id="webgl"></canvas>
+
+<pre class="vertex" id="tpl_vertex">
+attribute vec4 a_Position;
+void main(){
+  gl_Position = a_Position;
+  gl_PointSize = 10.0;
+}
+</pre>
+<pre id="tpl_frag">
+precision mediump float;
+uniform vec4 u_FragColor;
+void main(){
+  gl_FragColor = u_FragColor;
+}
+</pre>
+
+<script src="js/cuon-utils.js"></script>
+<script>
+  var vertex = document.getElementById('tpl_vertex').innerText;
+  var frag = document.getElementById('tpl_frag').innerText;
+
+  main();
+
+  function main() {
+    var canvas = document.getElementById('webgl');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var gl = canvas.getContext('webgl');
+
+    if (!initShaders(gl, vertex, frag)) return console.log('Failed to initialize shaders');
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var points = [{x: -.5, y: .5}, {x: .5, y: .5}, {x: .5, y: -.5}, {x: -.5, y: -.5}];
+    var colors = [[255, 0, 0, 1], [0, 255, 0, 1], [0, 0, 255, 1], [255, 255, 0, 1]];
+    var key = 'TRIANGLE_FAN';
+
+    /** TRIANGLE_STRIP 方式，连接方式是 p1p2p3，p2p3p4
+     * 一定要让第一个三角形的起点和终点（第一个点和第三个点在同一条边上，而不是对角线上）
+     1    2     而不是   1   2
+     3    4             4   3
+     * TRIANGLE_FAN 方式就无所谓了，起点不变，都是从起点开始组成三角形，会覆盖所有区域，p1p2p3，p1p3p4
+     * */
+    if (Math.random() > .5) {
+      key = 'TRIANGLE_STRIP';
+      var tmp = points[2];
+      points[2] = points[3];
+      points[3] = tmp;
+    }
+    document.getElementById('div_res').innerText = key;
+
+    var type = gl[key];
+
+    points.forEach(function (item, i) {
+      var color = colors[i];
+      gl.vertexAttrib2f(a_Position, item.x, item.y);
+      gl.uniform4f(u_FragColor, color[0], color[1], color[2], color[3]);
+      gl.drawArrays(gl.POINTS, 0, 1);
+    });
+
+    var arr = [];
+    points.forEach(function (point, i) {
+      arr.push(point.x, point.y);
+    });
+    var vertices = new Float32Array(arr);
+    // 创建缓冲区对象
+    var vertexBuffer = gl.createBuffer();
+    if (!vertexBuffer) return -1;
+
+    // 将缓冲区对象绑定到目标
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+
+    // 向缓冲区对象中写入数据
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    // 将缓冲区对象分配给 a_Position 变量
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+
+    // 连接a_Position变量与分配给它的缓冲区对象
+    gl.enableVertexAttribArray(a_Position);
+
+    // 绘制
+    gl.drawArrays(type, 0, 4);
+  }
+</script>
+
+</body>
+</html>
