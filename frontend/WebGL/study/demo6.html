@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>矩阵实现平移、旋转</title>
+  <style type="text/css">
+    body {margin: 0; overflow: hidden;}
+    pre {display: none;}
+    .box {position: absolute; top: 20px; left: 20px; }
+    button {padding: 5px 10px; margin-right: 20px; white-space: nowrap; text-align: center; border: none; outline: none; background: #fff;}
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <button id="btn_move">移动</button>
+  <button id="btn_rotate">旋转</button>
+</div>
+<canvas id="webgl"></canvas>
+
+<pre id="tpl_vertex">
+attribute vec4 a_Position;
+uniform mat4 u_Matrix;
+void main(){
+  gl_Position = u_Matrix * a_Position;
+  gl_PointSize = 1.0;
+}
+</pre>
+<pre id="tpl_frag">
+precision mediump float;
+uniform vec4 u_FragColor;
+void main(){
+  gl_FragColor = u_FragColor;
+}
+</pre>
+
+<script src="js/cuon-utils.js"></script>
+<script>
+  var vertex = document.getElementById('tpl_vertex').innerHTML;
+  var frag = document.getElementById('tpl_frag').innerHTML;
+
+  main();
+
+  function main() {
+    var canvas = document.getElementById('webgl');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var gl = canvas.getContext('webgl');
+
+    if (!initShaders(gl, vertex, frag)) return console.log('Failed to init shaders');
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    var u_Matrix = gl.getUniformLocation(gl.program, 'u_Matrix');
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+    gl.clearColor(0, 0, 0, 1);
+
+    // 移动距离和转换角度
+    var cur_Trans = {x: 0, y: 0, z: 0, w: 1.0};
+    var angle = 0;
+
+    draw();
+
+    // 移动
+    document.getElementById('btn_move').addEventListener('click', function () {
+      cur_Trans.x = Math.random() - .5;
+      cur_Trans.y = Math.random() - .5;
+      draw();
+    });
+    // 旋转
+    document.getElementById('btn_rotate').addEventListener('click', function () {
+      // angle = Math.random() * 360;
+      angle += 10;
+      draw();
+    });
+
+    // 绘制
+    function draw() {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      // 设置颜色
+      gl.uniform4f(u_FragColor, 100, 100, 0, 1);
+
+      // 设置旋转
+      var rad = 2 * Math.PI * angle / 360; // 角度转弧度
+      var sinB = Math.sin(rad);
+      var cosB = Math.cos(rad);
+      var x = cur_Trans.x;
+      var y = cur_Trans.y;
+      var z = cur_Trans.z;
+      var w = cur_Trans.w;
+
+      var matrix = new Float32Array([
+        cosB, sinB, 0.0, 0.0,
+        -sinB, cosB, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        x, y, z, w,
+      ]);
+
+      // 设置矩阵
+      gl.uniformMatrix4fv(u_Matrix, false, matrix);
+
+      // 缓冲区绘制
+      var points = [{x: 0, y: .3}, {x: -.2, y: -.3}, {x: .2, y: -.3}];
+      var arr = [];
+      points.forEach(function (point, i) {
+        arr.push(point.x, point.y);
+      });
+
+      var vertices = new Float32Array(arr);
+      var vertexBuffer = gl.createBuffer();
+      if (!vertexBuffer) return -1;
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(a_Position);
+      gl.drawArrays(gl.TRIANGLES, 0, points.length);
+    }
+  }
+</script>
+</body>
+</html>
