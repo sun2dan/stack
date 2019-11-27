@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>数学表达式实现平移、旋转、缩放</title>
+  <style type="text/css">
+    body {margin: 0; overflow: hidden;}
+    pre {display: none;}
+    .box {position: absolute; top: 20px; left: 20px; }
+    button {padding: 5px 10px; margin-right: 20px; white-space: nowrap; text-align: center; border: none; outline: none; background: #fff;}
+    .hidden {display: none;}
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <button id="btn_move" class="hidden">移动</button>
+  <button id="btn_rotate">旋转</button>
+  <button id="btn_scale" class="hidden">缩放</button>
+</div>
+<canvas id="webgl"></canvas>
+
+<pre id="tpl_vertex">
+attribute vec4 a_Position;
+uniform float u_SinB, u_CosB;
+
+void main(){
+  gl_Position.x = a_Position.x * u_CosB - a_Position.y * u_SinB;
+  gl_Position.y = a_Position.x * u_SinB + a_Position.y * u_CosB;
+  gl_Position.z = a_Position.z;
+  gl_Position.w = a_Position.w;
+  gl_PointSize = 10.0;
+}
+</pre>
+<pre id="tpl_frag">
+precision mediump float;
+uniform vec4 u_FragColor;
+void main(){
+  gl_FragColor = u_FragColor;
+}
+</pre>
+
+<script src="js/cuon-utils.js"></script>
+<script>
+  var vertex = document.getElementById('tpl_vertex').innerHTML;
+  var frag = document.getElementById('tpl_frag').innerHTML;
+
+  main();
+
+  function main() {
+    var canvas = document.getElementById('webgl');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var gl = canvas.getContext('webgl');
+
+    if (!initShaders(gl, vertex, frag)) return console.log('Failed to init shaders');
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    var u_Transition = gl.getUniformLocation(gl.program, 'u_Transition');
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+    var u_CosB = gl.getUniformLocation(gl.program, 'u_CosB');
+    var u_SinB = gl.getUniformLocation(gl.program, 'u_SinB');
+    gl.clearColor(0, 0, 0, 1);
+
+    // 移动距离和转换角度
+    var cur_Trans = {x: 0, y: 0, z: 0, w: 0};
+    var angle = 0;
+
+    draw();
+
+    // 移动
+    document.getElementById('btn_move').addEventListener('click', function () {
+      cur_Trans.x = Math.random() - .5;
+      cur_Trans.y = Math.random() - .5;
+      draw();
+    });
+    // 旋转
+    document.getElementById('btn_rotate').addEventListener('click', function () {
+      // angle = Math.random() * 360;
+      angle += 10;
+      draw();
+    });
+    // 缩放
+    document.getElementById('btn_scale').addEventListener('click', function () {
+      cur_Trans.w = Math.random() * 2;
+      draw();
+    });
+
+    // 绘制
+    function draw() {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // 设置颜色
+      gl.uniform4f(u_FragColor, 100, 100, 0, 1);
+      // 设置位移
+      gl.uniform4f(u_Transition, cur_Trans.x, cur_Trans.y, cur_Trans.z, cur_Trans.w);
+      // 设置旋转
+      var rad = 2 * Math.PI * angle / 360; // 角度转弧度
+      gl.uniform1f(u_SinB, Math.sin(rad));
+      gl.uniform1f(u_CosB, Math.cos(rad));
+
+      // 缓冲区绘制
+      var points = [{x: 0, y: .3}, {x: -.2, y: -.3}, {x: .2, y: -.3}];
+      var arr = [];
+      points.forEach(function (point, i) {
+        arr.push(point.x, point.y);
+      });
+
+      var vertices = new Float32Array(arr);
+      var vertexBuffer = gl.createBuffer();
+      if (!vertexBuffer) return -1;
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(a_Position);
+      gl.drawArrays(gl.TRIANGLES, 0, points.length);
+    }
+  }
+</script>
+</body>
+</html>
