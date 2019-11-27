@@ -66,15 +66,15 @@ void main(){
     gl.clearColor(0, 0, 0, 1);
 
     // 移动距离和转换角度
-    var cur_Trans = {x: 0, y: 0, z: 0, w: 0};
+    var trans = {x: 0, y: 0, z: 0, w: 0};
     var angle = 0;
 
     draw();
 
     // 移动
     document.getElementById('btn_move').addEventListener('click', function () {
-      cur_Trans.x = Math.random() - .5;
-      cur_Trans.y = Math.random() - .5;
+      trans.x = Math.random() - .5;
+      trans.y = Math.random() - .5;
       draw();
     });
     // 旋转
@@ -85,7 +85,7 @@ void main(){
     });
     // 缩放
     document.getElementById('btn_scale').addEventListener('click', function () {
-      cur_Trans.w = Math.random() * 2;
+      trans.w = Math.random() * 2;
       draw();
     });
 
@@ -96,7 +96,7 @@ void main(){
       // 设置颜色
       gl.uniform4f(u_FragColor, 100, 100, 0, 1);
       // 设置位移
-      gl.uniform4f(u_Transition, cur_Trans.x, cur_Trans.y, cur_Trans.z, cur_Trans.w);
+      gl.uniform4f(u_Transition, trans.x, trans.y, trans.z, trans.w);
       // 设置旋转
       var rad = 2 * Math.PI * angle / 360; // 角度转弧度
       gl.uniform1f(u_SinB, Math.sin(rad));

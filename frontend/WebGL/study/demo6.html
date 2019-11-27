@@ -18,6 +18,7 @@
 <div class="box">
   <button id="btn_move">移动</button>
   <button id="btn_rotate">旋转</button>
+  <button id="btn_scale">缩放</button>
 </div>
 <canvas id="webgl"></canvas>
 
@@ -58,21 +59,29 @@ void main(){
     gl.clearColor(0, 0, 0, 1);
 
     // 移动距离和转换角度
-    var cur_Trans = {x: 0, y: 0, z: 0, w: 1.0};
+    var trans = {x: 0, y: 0, z: 0, w: 1.0};
     var angle = 0;
+    var scale = {x: 1, y: 1, z: 1};
 
     draw();
 
     // 移动
     document.getElementById('btn_move').addEventListener('click', function () {
-      cur_Trans.x = Math.random() - .5;
-      cur_Trans.y = Math.random() - .5;
+      trans.x = Math.random() - .5;
+      trans.y = Math.random() - .5;
       draw();
     });
     // 旋转
     document.getElementById('btn_rotate').addEventListener('click', function () {
       // angle = Math.random() * 360;
       angle += 10;
+      draw();
+    });
+    // 缩放
+    document.getElementById('btn_scale').addEventListener('click', function () {
+      scale.x = Math.random();
+      scale.y = Math.random();
+      scale.z = 1;
       draw();
     });
 
@@ -82,23 +91,17 @@ void main(){
       // 设置颜色
       gl.uniform4f(u_FragColor, 100, 100, 0, 1);
 
-      // 设置旋转
+      // 设置矩阵
       var rad = 2 * Math.PI * angle / 360; // 角度转弧度
-      var sinB = Math.sin(rad);
-      var cosB = Math.cos(rad);
-      var x = cur_Trans.x;
-      var y = cur_Trans.y;
-      var z = cur_Trans.z;
-      var w = cur_Trans.w;
-
+      var sinB = Math.sin(rad), cosB = Math.cos(rad);
       var matrix = new Float32Array([
-        cosB, sinB, 0.0, 0.0,
-        -sinB, cosB, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        x, y, z, w,
+        cosB * scale.x, sinB, 0.0, 0.0,
+        -sinB, cosB * scale.y, 0.0, 0.0,
+        0.0, 0.0, scale.z, 0.0,
+        trans.x, trans.y, trans.z, trans.w
       ]);
 
-      // 设置矩阵
+      // 传递矩阵参数
       gl.uniformMatrix4fv(u_Matrix, false, matrix);
 
       // 缓冲区绘制
