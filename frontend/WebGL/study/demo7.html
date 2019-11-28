@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>多缓冲区绘制</title>
+  <style type="text/css">
+    body {margin: 0; overflow: hidden;}
+    pre {display: none;}
+    .box {position: absolute; top: 20px; left: 20px; font-size: 14px; color: #fff; }
+    button {padding: 5px 10px; margin-right: 20px; white-space: nowrap; text-align: center; border: none; outline: none; background: #fff;}
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <p>红色点是多缓冲区，为各类数据（点的位置和大小）单独创建缓冲区，各自依次传输</p>
+  <p>蓝色点是单缓冲区，为一个整体数据（数组）创建一个缓冲区，按规则进行（取值）传输</p>
+</div>
+<canvas id="webgl"></canvas>
+
+<pre id="tpl_vertex">
+attribute vec4 a_Position;
+attribute float a_PointSize;
+
+void main(){
+  gl_Position = a_Position;
+  gl_PointSize = a_PointSize;
+}
+</pre>
+<pre id="tpl_frag">
+precision mediump float;
+uniform vec4 u_FragColor;
+void main(){
+  gl_FragColor = u_FragColor;
+}
+</pre>
+
+<script src="js/cuon-utils.js"></script>
+<script>
+  var vertex = document.getElementById('tpl_vertex').innerHTML;
+  var frag = document.getElementById('tpl_frag').innerHTML;
+  var canvas = document.getElementById('webgl');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var gl = canvas.getContext('webgl');
+
+  if (!initShaders(gl, vertex, frag)) console.log('failed to init shaders');
+  else {
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    var a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    main1();
+    main2();
+  }
+
+  // 两类数据各自单独传输，逐项取值
+  function main1() {
+    var points = [{x: -.3, y: .2}, {x: 0, y: .2}, {x: .3, y: .2}];
+    var sizeArr = [10.0, 20.0, 30.0];
+    var pointArr = [];
+    points.forEach(function (point, i) {
+      pointArr.push(point.x, point.y);
+    });
+
+    gl.uniform4f(u_FragColor, 255, 0, 0, 1);
+    initBuffer(pointArr, a_Position, 2);
+    initBuffer(sizeArr, a_PointSize, 1);
+
+    gl.drawArrays(gl.POINTS, 0, points.length);
+    gl.disableVertexAttribArray(a_Position);
+    gl.disableVertexAttribArray(a_PointSize);
+
+    function initBuffer(arr, param, count) {
+      var vertices = new Float32Array(arr);
+
+      var vertexBuffer = gl.createBuffer();
+      if (!vertexBuffer) return -1;
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+      gl.vertexAttribPointer(param, count, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(param);
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
+  }
+
+  // 两类数据整体传输，按规则取值
+  function main2() {
+    var points = [{x: -.3, y: -.2, size: 10}, {x: 0, y: -.2, size: 20}, {
+      x: .3,
+      y: -.2,
+      size: 30
+    }];
+    var pointArr = [];
+    points.forEach(function (point, i) {
+      pointArr.push(point.x, point.y, point.size);
+    });
+    var step = 3;
+    var vertices = new Float32Array(pointArr);
+    var size = vertices.BYTES_PER_ELEMENT;  // 每个元素所占的字节数
+    gl.uniform4f(u_FragColor, 0, 0, 255, 1);
+
+    var vertexBuffer = gl.createBuffer();
+    if (!vertexBuffer) return -1;
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, size * step, 0);
+    gl.enableVertexAttribArray(a_Position);
+    gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, size * step, size * 2);
+    gl.enableVertexAttribArray(a_PointSize);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    /*gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);*/
+    gl.drawArrays(gl.POINTS, 0, points.length);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>多缓冲区绘制-两类数据整体传输，按规则取值</title>
+  <style type="text/css">
+    body {margin: 0; overflow: hidden;}
+    pre {display: none;}
+    .box {position: absolute; top: 20px; left: 20px; }
+    button {padding: 5px 10px; margin-right: 20px; white-space: nowrap; text-align: center; border: none; outline: none; background: #fff;}
+  </style>
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+
+<pre id="tpl_vertex">
+attribute vec4 a_Position;
+attribute float a_PointSize;
+
+void main(){
+  gl_Position = a_Position;
+  gl_PointSize = a_PointSize;
+}
+</pre>
+<pre id="tpl_frag">
+precision mediump float;
+uniform vec4 u_FragColor;
+void main(){
+  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+</pre>
+
+<script src="js/cuon-utils.js"></script>
+<script>
+  var vertex = document.getElementById('tpl_vertex').innerHTML;
+  var frag = document.getElementById('tpl_frag').innerHTML;
+
+  main();
+
+  function main() {
+    var canvas = document.getElementById('webgl');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var gl = canvas.getContext('webgl');
+
+    if (!initShaders(gl, vertex, frag)) return console.log('failed to init shaders');
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    var a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+
+    var points = [{x: 0, y: .3, size: 10.0}, {x: -.2, y: -.3, size: 20.0}, {x: .2, y: -.3, size: 30.0}];
+    var pointArr = [];
+    points.forEach(function (point, i) {
+      pointArr.push(point.x, point.y);
+    });
+    var sizeArr = [10.0, 20.0, 30.0];
+    initBuffer(pointArr, a_Position, 2);
+    initBuffer(sizeArr, a_PointSize, 1);
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, points.length);
+
+    function initBuffer(arr, param, count) {
+      var vertices = new Float32Array(arr);
+
+      var vertexBuffer = gl.createBuffer();
+      if (!vertexBuffer) return -1;
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+      gl.vertexAttribPointer(param, count, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(param);
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
+  }
+</script>
+</body>
+</html>
