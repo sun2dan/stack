@@ -92,35 +92,30 @@ void main(){
 
   // 两类数据整体传输，按规则取值
   function main2() {
-    var points = [{x: -.3, y: -.2, size: 10}, {x: 0, y: -.2, size: 20}, {
-      x: .3,
-      y: -.2,
-      size: 30
-    }];
+    var points = [{x: -.3, y: -.2, size: 10}, {x: 0, y: -.2, size: 20}, {x: .3, y: -.2, size: 30}];
     var pointArr = [];
     points.forEach(function (point, i) {
       pointArr.push(point.x, point.y, point.size);
     });
-    var step = 3;
+
+    var step = 3; // 数组中几个值一组来表示一个顶点
     var vertices = new Float32Array(pointArr);
-    var size = vertices.BYTES_PER_ELEMENT;  // 每个元素所占的字节数
-    gl.uniform4f(u_FragColor, 0, 0, 255, 1);
+    var fsize = vertices.BYTES_PER_ELEMENT;  // 每个元素所占的字节数
 
-    var vertexBuffer = gl.createBuffer();
-    if (!vertexBuffer) return -1;
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    var vertexBuffer = gl.createBuffer();  // 创建缓冲区对象
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // 指定缓冲区对象的处理方法(gl.ARRAY_BUFFER)
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); // 将数据写入缓冲区对象
 
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, size * step, 0);
-    gl.enableVertexAttribArray(a_Position);
-    gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, size * step, size * 2);
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, fsize * step, 0);  // 将缓冲区中的数据分配给变量
+    gl.enableVertexAttribArray(a_Position);              // 启用变量
+    gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, fsize * step, fsize * 2);
     gl.enableVertexAttribArray(a_PointSize);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);       // 清空缓冲区
     /*gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);*/
-    gl.drawArrays(gl.POINTS, 0, points.length);
+    gl.uniform4f(u_FragColor, 0, 0, 255, 1);    // 设置点的颜色
+    gl.drawArrays(gl.POINTS, 0, points.length); // 绘制点
   }
 </script>
 </body>
