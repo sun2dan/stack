@@ -11,9 +11,12 @@
     pre {display: none;}
     .box {position: absolute; top: 20px; left: 20px; }
     button {padding: 5px 10px; margin-right: 20px; white-space: nowrap; text-align: center; border: none; outline: none; background: #fff;}
+    #img_box {position: absolute; top: 0; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0;}
+    #img_box img {width: 150px; margin: 0 10px; }
   </style>
 </head>
 <body>
+<div id="img_box"></div>
 <canvas id="webgl"></canvas>
 
 <pre id="tpl_vertex">
@@ -94,8 +97,11 @@ void main(){
     var u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
     if (!texture || !u_Sampler) return undefined === console.error('initTexture failed');
 
+    var imgBox = document.getElementById('img_box');
     var img = new Image();
     img.src = './resource/texture.jpg';
+    imgBox.appendChild(img);
+
     img.onload = function () {
 
       // 对纹理图像进行y轴反转

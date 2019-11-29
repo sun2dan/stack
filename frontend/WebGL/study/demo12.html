@@ -11,9 +11,12 @@
     pre {display: none;}
     .box {position: absolute; top: 20px; left: 20px; }
     button {padding: 5px 10px; margin-right: 20px; white-space: nowrap; text-align: center; border: none; outline: none; background: #fff;}
+    #img_box {position: absolute; top: 0; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0;}
+    #img_box img {width: 150px; margin: 0 10px; }
   </style>
 </head>
 <body>
+<div id="img_box"></div>
 <canvas id="webgl"></canvas>
 
 <pre id="tpl_vertex">
@@ -63,8 +66,6 @@ void main(){
     var gl = canvas.getContext('webgl');
 
     if (!initShaders(gl, vertex, frag)) return console.log('failed to init shaders');
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
 
     initVertexBuffer(gl);
     initTexture(gl);
@@ -100,20 +101,25 @@ void main(){
   function initTexture(gl) {
     var imgArr = [];
 
+    var imgBox = document.getElementById('img_box');
     var srcArr = ['circle.gif', 'texture.jpg', 'blueflower.jpg'];
     srcArr.forEach(function (src, i) {
       var img = new Image();
       img.src = './resource/' + src;
       img.onload = loaded;
+      imgBox.appendChild(img);
     });
 
     function loaded(e) {
       imgArr.push(e.target);
       if (imgArr.length !== srcArr.length) return;
 
-      imgArr.forEach((img, i) => {
+      imgArr.forEach(function (img, i) {
         draw(img, i);
       });
+
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, points.length);
     }
 
