@@ -16,7 +16,7 @@ http.createServer(function (request, response) {
   // html 页面的响应
   var url = request.url;
   if (/^\/\w+\.html/.test(url)) {
-    var html = fs.readFileSync("ajax_302/" + url, "utf-8");
+    var html = fs.readFileSync("." + url, "utf-8");
     response.writeHead(200, {'Content-Type': 'text/html'});
     response.write(html);
     return response.end();
@@ -24,7 +24,7 @@ http.createServer(function (request, response) {
 
   // 重定向过来的，能加载到的页面
   if (/redirect$/.test(url)) {
-    var html = fs.readFileSync("ajax_302/redirect.html", "utf-8");
+    var html = fs.readFileSync("./redirect.html", "utf-8");
     response.writeHead(200, {'Content-Type': 'text/html'});
     response.write(html);
     return response.end();
@@ -45,7 +45,7 @@ http.createServer(function (request, response) {
   // type: 0, redirect - 测试同域重定向，页面加载成功，
   // type: 1, 404 - 测试同域重定向，页面加载失败
   // type: 2, 测试跨域情况下，ajax中的状态码
-  if (type === 2) path = 'http://ashita.com';
+  if (type === 2) path = 'https://ashita.com';
   else path = 'http://test.com:8098/' + ['redirect', '404'][type];
 
   index++;
