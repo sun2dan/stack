@@ -5,10 +5,10 @@
   <meta name="format-detection" content="telephone=no"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta charset="utf-8">
-  <title>带cookie，简单请求</title>
+  <title>2.带cookie，简单请求</title>
 </head>
 <body>
-
+2、带cookie，简单请求（默认Content-Type）
 <script>
   // 开发者工具中查看NetWork的XHR中，可以看到4个请求，每个请求包含一个预检请求和一个实际请求
   main();
@@ -23,7 +23,7 @@
       if (xhr.readyState === 4) {
         console.group('b.test.com:8091');
         console.log('返回结果：', xhr.response);
-        console.log('response中有cookie，说明请求的时候带了cookie ==> 同一主域下可以带 cookie');
+        console.log('request中有cookie，说明请求的时候带了cookie ==> 同一主域下可以带 cookie');
         console.groupEnd();
       }
     };
@@ -39,7 +39,7 @@
       if (xhr.readyState === 4) {
         console.group('server.com:8091');
         console.log('返回结果：', xhr.response);
-        console.log('response中没有cookie，说明请求的时候没有带cookie ==> 跨域无法携带cookie');
+        console.log('request中没有cookie，说明请求的时候没有带cookie ==> 跨域无法携带cookie');
         console.groupEnd();
       }
     };
