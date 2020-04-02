@@ -13,24 +13,25 @@
     ul {list-style: none;}
     li {margin-bottom: 10px;}
     span:first-of-type {display: inline-block; width: 80px; margin-right: 6px; text-align: right;}
-    input {width: 50px; padding: 5px; font-size: 16px; }
+    input {width: 80px; padding: 5px; font-size: 16px; }
     button {width: 80px; height: 40px; margin-left: 86px; line-height: 40px; font-size: 16px;}
     b {color: #228B22; opacity: 1; transition: all ease .5s;}
 
-    #box {position: absolute; width: 300px; height: 200px; top: 50px; left: 400px; background: #eee; }
+    .box {position: absolute; width: 300px; height: 200px; top: 50px; left: 400px; background: #eee; }
     .cont {padding: 30px 0; text-align: center;}
 
     .res-box {position: relative; display: inline-block; padding: 20px; z-index: 10; white-space: nowrap; font-size: 0; background: rgba(225, 225, 225, .6);}
     h3 {font-size: 20px;}
-    textarea {width: 600px; height: 400px; font-size: 16px; resize: none;}
+    textarea {width: 600px; height: 400px; font-size: 16px; resize: none; background: rgba(255, 255, 255, .5);}
   </style>
   <style type="text/css" id="style_dynamic"></style>
+
   <!-- css模板 -->
   <script type="text/template" id="style_tpl">
-    #box {position: absolute; width: {w}px; height: {h}px;}
-    #box .svg-ani {position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;}
-    #box .svg-ani path {stroke-width: {lw}px; fill: transparent; stroke: blue; stroke-dashoffset: 0; stroke-dasharray: 0, {w}, 0, {h}, 0, {w}, 0, {h}; transition: all ease .4s;}
-    #box:hover path {stroke-dasharray: {w}, 0, {h}, 0, {w}, 0, {h}, 0;}
+    .box {position: absolute; width: {w}px; height: {h}px;}
+    .box .svg-ani {position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;}
+    .box .svg-ani path {stroke-width: {dsw}px; fill: transparent; stroke: blue; stroke-dashoffset: 0; stroke-dasharray: 0, {w}, 0, {h}, 0, {w}, 0, {h}; transition: all ease .4s;}
+    .box:hover path {stroke-dasharray: {w}, 0, {h}, 0, {w}, 0, {h}, 0;}
   </script>
 </head>
 <body>
@@ -55,7 +56,6 @@
     </li>
     <li>
       <button id="btn">生成</button>
-      <b>完成</b>
     </li>
   </ul>
 
@@ -65,20 +65,28 @@
   </div>
 </div>
 
-<div id="box">
+<div class="box">
   <div class="cont">
+    <b></b>
     <p>demo示例</p>
+    <p>这里是内容</p>
     <a href="javascript:;">链接</a>
   </div>
   <svg class="svg-ani">
-    <path id="path"></path>
+    <path></path>
   </svg>
 </div>
 
 <script>
+  /**
+   * 该方案采用的是两倍边框的做法，
+   * 边框变为两倍，svg区域内外各一半，
+   * 区域外（x或y方向为负值）的边框不显示
+   * */
+
   (function () {
-    let box = document.getElementById('box');
-    let path = document.getElementById('path');
+    let box = document.getElementsByClassName('box')[0];
+    let path = document.getElementsByTagName('path')[0];
     let ipts = document.getElementsByTagName('input');
     let area = document.getElementsByTagName('textarea')[0];
     let res = document.getElementsByTagName('b')[0];
@@ -102,7 +110,7 @@
       let styleStr = format('<style type="text/css">{0}</style>\r\n\r\n', style.innerHTML);
       area.value = styleStr + box.outerHTML;
 
-      res.innerText = '完成';
+      res.innerText = '完成，hover查看效果';
       res.style.opacity = 1;
       clearTimeout(timer);
       timer = setTimeout(function () {
@@ -118,7 +126,9 @@
         let val = /^\d+$/.test(value) ? value : defVals[i];
         arr.push(val);
       }
-      return {w: arr[0], h: arr[1], lw: arr[2] * 2};
+      let sw = arr[2];
+      // sw: stroke-width;  hsw: half stroke-width;  dsw: double sw
+      return {w: arr[0], h: arr[1], sw: sw, hsw: sw / 2, dsw: sw * 2};
     }
 
     function format(str) {
