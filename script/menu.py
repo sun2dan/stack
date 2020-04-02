@@ -32,7 +32,7 @@ def fill_menu(result):
             str_li += '<li><a href="{0}">{1}. {2}</a></li>'.format(item['href'], idx, item['title'])
             idx += 1
         str_ul = '<ul class="menu">{0}</ul>'.format(str_li)
-        str_cont += '<h2>{0}</h2>{1}'.format(key, str_ul)
+        str_cont += '<div class="group"><h2>{0}</h2>{1}</div>'.format(key, str_ul)
 
     full_path = os.path.abspath('../index.html')
     f = open(full_path, 'r')

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>svg边框动画</title>
+  <style type="text/css">
+    * {padding: 0; margin: 0;}
+    .page {padding: 50px 0 0 100px;}
+    h2 {line-height: 1.5; margin-bottom: 30px;}
+    ul {list-style: none;}
+    li {margin-bottom: 10px;}
+    span:first-of-type {display: inline-block; width: 80px; margin-right: 6px; text-align: right;}
+    input {width: 50px; padding: 5px; font-size: 16px; }
+    button {width: 80px; height: 40px; margin-left: 86px; line-height: 40px; font-size: 16px;}
+    b {color: #228B22; opacity: 1; transition: all ease .5s;}
+
+    #box {position: absolute; width: 300px; height: 200px; top: 50px; left: 400px; background: #eee; }
+    .cont {padding: 30px 0; text-align: center;}
+
+    .res-box {position: relative; display: inline-block; padding: 20px; z-index: 10; white-space: nowrap; font-size: 0; background: rgba(225, 225, 225, .6);}
+    h3 {font-size: 20px;}
+    textarea {width: 600px; height: 400px; font-size: 16px; resize: none;}
+  </style>
+  <style type="text/css" id="style_dynamic"></style>
+  <!-- css模板 -->
+  <script type="text/template" id="style_tpl">
+    #box {position: absolute; width: {w}px; height: {h}px;}
+    #box .svg-ani {position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;}
+    #box .svg-ani path {stroke-width: {lw}px; fill: transparent; stroke: blue; stroke-dashoffset: 0; stroke-dasharray: 0, {w}, 0, {h}, 0, {w}, 0, {h}; transition: all ease .4s;}
+    #box:hover path {stroke-dasharray: {w}, 0, {h}, 0, {w}, 0, {h}, 0;}
+  </script>
+</head>
+<body>
+
+<div class="page">
+  <h2>边框动画生成器</h2>
+  <ul class="field">
+    <li>
+      <span>宽度</span>
+      <input type="text" value="300" maxlength="4"/>
+      <span>px</span>
+    </li>
+    <li>
+      <span>高度</span>
+      <input type="text" value="200" maxlength="4"/>
+      <span>px</span>
+    </li>
+    <li>
+      <span>边框宽度</span>
+      <input type="text" value="4" maxlength="4"/>
+      <span>px</span>
+    </li>
+    <li>
+      <button id="btn">生成</button>
+      <b>完成</b>
+    </li>
+  </ul>
+
+  <div class="res-box">
+    <h3>html</h3>
+    <textarea></textarea>
+  </div>
+</div>
+
+<div id="box">
+  <div class="cont">
+    <p>demo示例</p>
+    <a href="javascript:;">链接</a>
+  </div>
+  <svg class="svg-ani">
+    <path id="path"></path>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    let box = document.getElementById('box');
+    let path = document.getElementById('path');
+    let ipts = document.getElementsByTagName('input');
+    let area = document.getElementsByTagName('textarea')[0];
+    let res = document.getElementsByTagName('b')[0];
+    let timer = null;
+
+    document.getElementById('btn').onclick = function () {
+      refresh();
+    };
+
+    refresh();
+
+    function refresh() {
+      let opts = getSettings();
+
+      let pathAttrStr = format('M0 0 L{w} 0 L{w} {h} L0 {h} L0 0', opts);
+      path.setAttribute('d', pathAttrStr);
+
+      let tpl = document.getElementById('style_tpl').innerText;
+      let style = document.getElementById('style_dynamic');
+      style.innerHTML = format(tpl, opts);
+      let styleStr = format('<style type="text/css">{0}</style>\r\n\r\n', style.innerHTML);
+      area.value = styleStr + box.outerHTML;
+
+      res.innerText = '完成';
+      res.style.opacity = 1;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        res.style.opacity = 0;
+      }, 3000);
+    }
+
+    function getSettings() {
+      let arr = [];
+      let defVals = [300, 200, 2];
+      for (let i = 0, len = ipts.length; i < len; i++) {
+        let value = ipts[i].value;
+        let val = /^\d+$/.test(value) ? value : defVals[i];
+        arr.push(val);
+      }
+      return {w: arr[0], h: arr[1], lw: arr[2] * 2};
+    }
+
+    function format(str) {
+      let pattern = /\{([\w\-_]+)\}/gm;
+      let arr = Array.prototype.slice.call(arguments, 1);
+      let args = /\{(\d+)\}/.test(str) ? arr : arr[0];
+      return str.replace(pattern, function () {
+        return args[arguments[1]];
+      });
+    }
+  })();
+
+</script>
+</body>
+</html>
