@@ -15,12 +15,12 @@
     span:first-of-type {display: inline-block; width: 80px; margin-right: 6px; text-align: right;}
     input {width: 80px; padding: 5px; font-size: 16px; }
     button {width: 80px; height: 40px; margin-left: 86px; line-height: 40px; font-size: 16px;}
-    b {color: #228B22; opacity: 1; transition: all ease .5s;}
+    b {display: block; margin-bottom: 10px; font-size: 18px; color: red; opacity: 1; transition: all ease .5s;}
 
     .box {position: absolute; width: 300px; height: 200px; top: 50px; left: 400px; background: #eee; }
     .cont {padding: 30px 0; text-align: center;}
 
-    .res-box {position: relative; display: inline-block; padding: 20px; z-index: 10; white-space: nowrap; font-size: 0; background: rgba(225, 225, 225, .6);}
+    .res-box {position: relative; display: inline-block; padding: 20px; margin-top: 20px; z-index: 10; white-space: nowrap; font-size: 0; background: rgba(225, 225, 225, .6);}
     h3 {font-size: 20px;}
     textarea {width: 600px; height: 400px; font-size: 16px; resize: none; background: rgba(255, 255, 255, .5);}
   </style>
@@ -80,8 +80,7 @@
 <script>
   /**
    * 该方案采用的是两倍边框的做法，
-   * 边框变为两倍，svg区域内外各一半，
-   * 区域外（x或y方向为负值）的边框不显示
+   * 边框变为两倍，svg可视区内外各一半，可视区外的边框看不到
    * */
 
   (function () {
