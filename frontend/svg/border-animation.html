@@ -29,8 +29,8 @@
   <!-- css模板 -->
   <script type="text/template" id="style_tpl">
     .box {position: absolute; width: {w}px; height: {h}px;}
-    .box .svg-ani {position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;}
-    .box .svg-ani path {stroke-width: {dsw}px; fill: transparent; stroke: blue; stroke-dashoffset: 0; stroke-dasharray: 0, {w}, 0, {h}, 0, {w}, 0, {h}; transition: all ease .4s;}
+    .box .svg-border {position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;}
+    .box .svg-border path {stroke-width: {dsw}px; fill: transparent; stroke: blue; stroke-dashoffset: 0; stroke-dasharray: 0, {w}, 0, {h}, 0, {w}, 0, {h}; transition: all ease .4s;}
     .box:hover path {stroke-dasharray: {w}, 0, {h}, 0, {w}, 0, {h}, 0;}
   </script>
 </head>
@@ -72,7 +72,7 @@
     <p>这里是内容</p>
     <a href="javascript:;">链接</a>
   </div>
-  <svg class="svg-ani">
+  <svg class="svg-border">
     <path></path>
   </svg>
 </div>
