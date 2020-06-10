@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta charset="utf-8">
+  <title>tab标签，间距固定，宽度不定的抖动处理</title>
+  <style type="text/css">
+    body {padding: 50px 40px;}
+    * {padding: 0; margin: 0;}
+    div {margin: 0 0 40px 0;}
+    ul {display: flex; margin-top: 20px; list-style: none;}
+
+    li {position: relative; height: 50px; line-height: 50px; padding: 0 10px; overflow: hidden; transition: all ease .2s; cursor: pointer;}
+    li:after {content: ''; position: absolute; left: 0; bottom: 0; right: 0; height: 2px; transform: scale(0, 1); transform-origin: center center; background-color: #2268cc; transition: all ease .2s;}
+    li:hover, li span {font-size: 20px; color: #2268cc;}
+    li:hover:after {transform: scale(1);}
+    li span {visibility: hidden;}
+
+    .demo2 li {padding: 0 8px; text-align: center;}
+    .demo2 li span {display: inline-block; height: 0; overflow: hidden;}
+    .demo2 li:after {left: 4px; right: 4px;}
+  </style>
+</head>
+<body>
+<p>tab标签样式，间距固定，每一项宽度不定，hover 时字号变大；</p>
+<p>如果不做处理，第一次hover或鼠标离开整个tab时，当前标签后的所有标签位置会发生变动，看起来就像整个tab在抖动；</p>
+<p style="margin-bottom:40px;">一般tab标签的样式，会用 inline-block 或 flex 布局实现，不管哪一种，不做处理，都会发生抖动的现象。</p>
+
+<div class="demo1">
+  <h2>flex布局，每一项不定宽，每一项之间的距离固定，hover字号变大的情况，整体会被撑开。</h2>
+  <ul>
+    <li>标题1</li>
+    <li>标题2</li>
+    <li>标题3</li>
+    <li>标题4</li>
+    <li>标题5</li>
+  </ul>
+</div>
+
+<div class="demo2">
+  <h2>加一个隐藏固定的元素，样式和hover一致，把容器撑起来。</h2>
+  <ul>
+    <li><p>标题1</p><span>标题1</span></li>
+    <li><p>标题2</p><span>标题2</span></li>
+    <li><p>标题3</p><span>标题3</span></li>
+    <li><p>标题4</p><span>标题4</span></li>
+    <li><p>标题5</p><span>标题5</span></li>
+  </ul>
+</div>
+
+</body>
+</html>
