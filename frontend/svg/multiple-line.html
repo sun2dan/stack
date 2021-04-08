@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta charset="utf-8">
+    <title>多条折线的动画效果</title>
+    <style type="text/css">
+        .ani { transition: all ease 3s; }
+    </style>
+</head>
+<body>
+
+    <!-- 背景：需要一个随机生成的折线动画效果
+         原理：根据随机数生成 path 路径，获取路径总长度，设置 dasharray 和 dashoffset，
+              然后将 dashoffset 改为 0，在 transition 的作用下做动画；
+         缺点：因为各路径长度不一，匀速动画下，每帧渲染的线条长度也不一样，所以动画期间，每条线的前端不一定对齐
+    -->
+
+    <svg style="width:340px; height:128px;">
+        <path stroke="#404040" fill="none"></path>
+        <path stroke="#2877FF" fill="none"></path>
+        <path stroke="#56E2C7" fill="none"></path>
+        <path stroke="#FFBC0B" fill="none"></path>
+    </svg>
+
+    <script>
+        (function () {
+            let count = 340;
+
+            // min-最小值，max-最大值
+            function generateRandomLine(min, max) {
+                let res = [];
+                let dis = max - min;
+
+                for (let i = 0; i < count; i = i + 3) {
+                    let n = parseInt(Math.ceil(Math.random() * dis)) + min;
+                    res.push(`${i} ${n}`);
+                }
+
+                return 'M' + res.join(' L');
+            }
+
+            let paths = document.getElementsByTagName('path');
+
+            [[1, 18], [22, 32], [36, 64], [70, 79]].forEach((arr, i) => {
+                let str = generateRandomLine(arr[0], arr[1]);
+                let p = paths[i];
+
+                p.setAttribute('d', str);
+                let length = p.getTotalLength();
+                length = parseInt(Math.ceil(length));
+                p.setAttribute('stroke-dasharray', `${length} ${length}`); // 线条、间隔、线条、间隔
+                p.setAttribute('stroke-dashoffset', length); // 正好显示一段间隔
+
+                (function (p) {
+                    setTimeout(function () {
+                        p.classList.add('ani');
+                        p.setAttribute('stroke-dashoffset', 0);
+                    }, 200);
+                })(p);
+            });
+        })();
+    </script>
+</body>
+</html>
