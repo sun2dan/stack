@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1.0,user-scalable=no">
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta charset="utf-8">
+  <title>前端上传预览和下载</title>
+  <style type="text/css">
+    .flex {
+      display: flex;
+      align-items: center;
+    }
+
+    .file-name {
+      font-size: 14px;
+    }
+
+    .upload-box {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 20px 20px 0 0;
+      border: 1px solid #ccc;
+    }
+
+    .upload-ipt {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      width: 20px;
+      height: 20px;
+    }
+
+    .upload-icon:before,
+    .upload-icon:after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate3d(-50%, -50%, 0);
+      background: #aaa;
+    }
+
+    .upload-icon:before {
+      width: 100%;
+      height: 2px;
+    }
+
+    .upload-icon:after {
+      width: 2px;
+      height: 100%;
+    }
+
+    .btn-box button {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="flex">
+    <div class="upload-box">
+      <input class="upload-ipt" type="file" />
+      <i class="upload-icon"></i>
+    </div>
+    <div class="btn-box">
+      <button class="btn-show">base64预览</button>
+      <button class="btn-show1">对象URL预览</button>
+      <button class="btn-download1">下载</button>
+    </div>
+  </div>
+  <div class="file-name">这里显示文件名</div>
+  <div class="preview-box">
+    <img id="img_preview" alt="">
+  </div>
+  <script type="text/javascript">
+    (function () {
+      let file = null;
+
+      document.querySelector('.upload-ipt').addEventListener('change', function (e) {
+        let files = e.target.files;
+        if (files.length === 0) return;
+        file = files[0];
+        document.querySelector('.file-name').innerText = file.name;
+      }, false);
+
+      // 预览
+      document.querySelector('.btn-show').addEventListener('click', function () {
+        if (!file || !file.type.startsWith('image/')) return console.log('未选择文件或文件不是图片类型');
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = function (ev) {
+          if (ev.target.readyState !== FileReader.DONE) return console.error('读取失败');
+          console.log(reader.result);
+          document.querySelector('#img_preview').src = reader.result;
+        };
+      }, false);
+
+      // 预览2
+      document.querySelector('.btn-show1').addEventListener('click', function () {
+        if (!file || !file.type.startsWith('image/')) return console.log('未选择文件或文件不是图片类型');
+        let objectURL = getObjectUrl(file);
+        console.log(objectURL);
+        document.querySelector('#img_preview').src = objectURL;
+      }, false);
+
+      // 下载
+      document.querySelector('.btn-download1').addEventListener('click', function () {
+        if (!file) return;
+        let objectURL = getObjectUrl(file);
+        let link = document.createElement("a");
+        link.href = objectURL;
+        link.download = file.name;
+        link.click();
+      }, false);
+
+      // 获取url
+      function getObjectUrl(file) {
+        let { type } = file;
+        let blob = new Blob([file], { type });
+        let objectURL = window.URL.createObjectURL(blob);
+        window.URL.revokeObjectURL(blob);
+        return objectURL;
+      }
+    })();
+  </script>
+</body>
+</html>
