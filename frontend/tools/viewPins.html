@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PIN 可视化</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #stats {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(100, 1fr);
+      gap: 1px;
+    }
+
+    .cell {
+      width: 100%;
+      aspect-ratio: 1;
+      font-size: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      cursor: default;
+    }
+
+    .tested {
+      background: #999;
+      color: white;
+    }
+
+    .untested {
+      background: white;
+      color: #ddd;
+      border: 1px solid #eee;
+    }
+
+    .imported {
+      background: #666;
+      color: white;
+    }
+
+    .generated {
+      background: #999;
+      color: white;
+    }
+
+    .current {
+      background: orange !important;
+      color: black !important;
+      font-weight: bold;
+    }
+
+    #legend {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-box {
+      width: 16px;
+      height: 16px;
+      border: 1px solid #ccc;
+    }
+  </style>
+
+  
+</head>
+<body>
+  <div class="container">
+    <h2>PIN 穷举可视化</h2>
+    <div>
+      <button id="exportBtn">
+        导出 JSON 文件
+      </button>
+      <button id="exportTextBtn">
+        导出纯文本
+      </button>
+
+      <span style="display:inline-block; width:50px;"></span>
+
+      <button id="importStorageBtn">
+        导入 JSON 文件
+      </button>
+      <input type="file" id="fileInput" accept=".json" style="display:none" />
+
+      <button id="importTextBtn">
+        从文本导入
+      </button>
+
+      <span style="display:inline-block; width:50px;"></span>
+      <button id="clearBtn">
+        清空全部数据
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <textarea id="textExport" style="
+      width:100%;
+      height:220px;
+      font-family:monospace;
+    " placeholder="这里可以导出或粘贴数据"></textarea>
+  </div>
+
+  <div id="stats"></div>
+
+  <div id="legend">
+    <div class="legend-item">
+      <div class="legend-box" style="background:white"></div>
+      未尝试
+    </div>
+
+    <div class="legend-item">
+      <div class="legend-box" style="background:#999"></div>
+      随机生成已试
+    </div>
+
+    <div class="legend-item">
+      <div class="legend-box" style="background:#666"></div>
+      手动导入已试
+    </div>
+
+    <div class="legend-item">
+      <div class="legend-box" style="background:orange"></div>
+      当前PIN
+    </div>
+  </div>
+
+  <div id="grid"></div>
+
+  <script>
+    const GENERATED_KEY = 'generatedPins';
+    const IMPORTED_KEY = 'importedPins';
+
+    // view
+    (function () {
+      const generatedPins = JSON.parse(
+        localStorage.getItem(GENERATED_KEY) || '[]'
+      );
+
+      const importedPins = new Set(
+        JSON.parse(localStorage.getItem(IMPORTED_KEY) || '[]')
+      );
+
+      const currentPin =
+        generatedPins[generatedPins.length - 1];
+
+      const grid = document.getElementById('grid');
+      const stats = document.getElementById('stats');
+
+      const generatedSet = new Set(generatedPins);
+
+      let testedCount =
+        new Set([
+          ...generatedPins,
+          ...importedPins
+        ]).size;
+
+      stats.innerHTML = `
+总进度: ${testedCount} / 10000
+（${(testedCount / 100).toFixed(2)}%）
+`;
+
+      for (let i = 0; i <= 9999; i++) {
+
+        const pin = i
+          .toString()
+          .padStart(4, '0');
+
+        const cell = document.createElement('div');
+
+        cell.className = 'cell';
+
+        if (pin === currentPin) {
+          cell.classList.add('current');
+        }
+        else if (importedPins.has(pin)) {
+          cell.classList.add('imported');
+        }
+        else if (generatedSet.has(pin)) {
+          cell.classList.add('generated');
+        }
+        else {
+          cell.classList.add('untested');
+        }
+
+        cell.innerText = pin;
+
+        cell.title = pin;
+
+        grid.appendChild(cell);
+      }
+    })();
+
+
+    // import / export
+    (function () {
+      // 导出 JSON 文件
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        const data = {
+          generatedPins: JSON.parse(
+            localStorage.getItem(GENERATED_KEY) || '[]'
+          ),
+
+          importedPins: JSON.parse(
+            localStorage.getItem(IMPORTED_KEY) || '[]'
+          ),
+
+          exportTime: new Date().toISOString()
+        };
+
+        const blob = new Blob(
+          [JSON.stringify(data, null, 2)],
+          { type: 'application/json' }
+        );
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = `pin-backup-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // 导入 JSON 文件
+      document.getElementById('importStorageBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+      });
+
+      // 上传文件
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          const currentGenerated = new Set(
+            JSON.parse(
+              localStorage.getItem(GENERATED_KEY) || '[]'
+            )
+          );
+          const currentImported = new Set(
+            JSON.parse(
+              localStorage.getItem(IMPORTED_KEY) || '[]'
+            )
+          );
+
+          (data.generatedPins || []).forEach(v => currentGenerated.add(v));
+          (data.importedPins || []).forEach(v => currentImported.add(v));
+
+          localStorage.setItem(
+            GENERATED_KEY,
+            JSON.stringify([...currentGenerated])
+          );
+          localStorage.setItem(
+            IMPORTED_KEY,
+            JSON.stringify([...currentImported])
+          );
+          alert('导入成功，请刷新页面');
+        } catch (err) {
+          alert('导入失败：文件格式错误');
+          console.error(err);
+        }
+        e.target.value = '';
+      });
+
+
+      const textExport =
+        document.getElementById('textExport');
+
+      //
+      // 纯文本导出
+      //
+      document.getElementById('exportTextBtn').addEventListener('click', () => {
+
+        const generatedPins = JSON.parse(
+          localStorage.getItem(GENERATED_KEY) || '[]'
+        );
+
+        const importedPins = JSON.parse(
+          localStorage.getItem(IMPORTED_KEY) || '[]'
+        );
+
+        const text =
+          `# generatedPins
+${generatedPins.join('\n')}
+
+# importedPins
+${importedPins.join('\n')}
+`;
+
+        textExport.value = text;
+        textExport.select();
+
+        navigator.clipboard
+          ?.writeText(text)
+          .catch(() => { });
+      });
+
+      //
+      // 从文本导入
+      //
+      document.getElementById('importTextBtn').addEventListener('click', () => {
+        const text = textExport.value;
+
+        if (!text.trim()) {
+          alert('文本为空');
+          return;
+        }
+
+        const generatedPins = new Set(
+          JSON.parse(
+            localStorage.getItem(GENERATED_KEY) || '[]'
+          )
+        );
+
+        const importedPins = new Set(
+          JSON.parse(
+            localStorage.getItem(IMPORTED_KEY) || '[]'
+          )
+        );
+
+        let mode = null;
+
+        const lines = text
+          .split('\n')
+          .map(v => v.trim());
+
+        let generatedCount = 0;
+        let importedCount = 0;
+
+        lines.forEach(line => {
+
+          if (!line) return;
+
+          if (line === '# generatedPins') {
+            mode = 'generated';
+            return;
+          }
+
+          if (line === '# importedPins') {
+            mode = 'imported';
+            return;
+          }
+
+          if (!/^\d{4}$/.test(line)) {
+            return;
+          }
+
+          if (mode === 'generated') {
+
+            if (!generatedPins.has(line)) {
+              generatedPins.add(line);
+              generatedCount++;
+            }
+
+          } else if (mode === 'imported') {
+
+            if (!importedPins.has(line)) {
+              importedPins.add(line);
+              importedCount++;
+            }
+          }
+        });
+
+        localStorage.setItem(
+          GENERATED_KEY,
+          JSON.stringify([...generatedPins])
+        );
+
+        localStorage.setItem(
+          IMPORTED_KEY,
+          JSON.stringify([...importedPins])
+        );
+
+        alert(
+          `导入完成\ngeneratedPins: ${generatedCount}\nimportedPins: ${importedCount}`
+        );
+      });
+
+      //
+      // 清空全部数据
+      //
+      document.getElementById('clearBtn').addEventListener('click', () => {
+
+        const ok = confirm(
+          '确定清空全部数据吗？'
+        );
+
+        if (!ok) return;
+        localStorage.removeItem(GENERATED_KEY);
+        localStorage.removeItem(IMPORTED_KEY);
+
+        alert('已清空，请刷新页面');
+      });
+    })();
+  </script>
+</body>
+</html>
