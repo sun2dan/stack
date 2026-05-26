@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4位PIN穷举助手</title>
+
+  <style>
+    body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+
+  #pin {
+    font-size: 90px;
+    font-weight: bold;
+    letter-spacing: 10px;
+    margin-bottom: 10px;
+  }
+
+  #count {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  #history {
+    margin: 20px auto;
+    width: 320px;
+    text-align: left;
+    border: 1px solid #ccc;
+    padding: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    font-family: monospace;
+    background: #fafafa;
+  }
+
+  textarea {
+    width: 320px;
+    height: 180px;
+    font-size: 16px;
+    padding: 10px;
+    margin-top: 20px;
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #tip {
+    margin-top: 30px;
+    color: #999;
+  }
+  </style>
+
+  
+</head>
+<body>
+  <div id="pin">0000</div>
+
+<div id="count"></div>
+
+<div>
+  <button id="prevBtn">上一个</button>
+  <button id="nextBtn">下一个（空格）</button>
+</div>
+
+<h3>随机生成记录</h3>
+<div id="history"></div>
+
+<h3>导入已试过数字</h3>
+
+<textarea id="batchInput" placeholder="每行输入一个4位数字"></textarea>
+<br>
+
+<button id="importBtn">导入</button>
+
+<div id="tip">
+按 空格 键切换下一个未试过的4位数字
+</div>
+
+  <script>
+    function generatePatternPins(limit = 500) {
+  const result = new Set();
+
+  // =====================
+  // 工具函数
+  // =====================
+
+  function add(pin) {
+    if (/^\d{4}$/.test(pin)) {
+      result.add(pin);
+    }
+  }
+
+  // =====================
+  // 第一优先级
+  // ABAB
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      add(`${a}${b}${a}${b}`);
+    }
+  }
+
+  // =====================
+  // AABB
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      add(`${a}${a}${b}${b}`);
+    }
+  }
+
+  // =====================
+  // AAAB
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      add(`${a}${a}${a}${b}`);
+    }
+  }
+
+  // =====================
+  // ABBB
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      add(`${a}${b}${b}${b}`);
+    }
+  }
+
+  // =====================
+  // ABAA
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      add(`${a}${b}${a}${a}`);
+    }
+  }
+
+  // =====================
+  // AABC
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      for (let c = 0; c <= 9; c++) {
+        add(`${a}${a}${b}${c}`);
+      }
+    }
+  }
+
+  // =====================
+  // BAAC
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      for (let c = 0; c <= 9; c++) {
+        add(`${b}${a}${a}${c}`);
+      }
+    }
+  }
+
+  // =====================
+  // ABCA
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      for (let c = 0; c <= 9; c++) {
+        add(`${a}${b}${c}${a}`);
+      }
+    }
+  }
+
+  // =====================
+  // ABCC
+  // =====================
+
+  for (let a = 0; a <= 9; a++) {
+    for (let b = 0; b <= 9; b++) {
+      for (let c = 0; c <= 9; c++) {
+        add(`${a}${b}${c}${c}`);
+      }
+    }
+  }
+
+  // =====================
+  // 不够5000则补随机双重复结构
+  // =====================
+
+  while (result.size < limit) {
+    const nums = [];
+
+    for (let i = 0; i < 4; i++) {
+      nums.push(Math.floor(Math.random() * 10));
+    }
+
+    // 至少两个数字相同
+    const count = {};
+
+    nums.forEach((v) => {
+      count[v] = (count[v] || 0) + 1;
+    });
+
+    const hasRepeat = Object.values(count).some((v) => v >= 2);
+
+    if (hasRepeat) {
+      add(nums.join(''));
+    }
+  }
+
+  return [...result].slice(0, limit);
+}
+
+function generatePatternPins1() {
+  return [
+    '0000',
+    '0001',
+    '0002',
+    '0003',
+    '0004',
+    '0005',
+    '0006',
+    '0007',
+    '0008',
+    '0009',
+    '0011',
+    '0022',
+    '0033',
+    '0044',
+    '0055',
+    '0066',
+    '0077',
+    '0088',
+    '0099',
+
+    '0101',
+    '0110',
+    '0111',
+    '0112',
+    '0113',
+    '0114',
+    '0115',
+    '0116',
+    '0117',
+    '0118',
+    '0119',
+
+    '0202',
+    '0220',
+    '0222',
+
+    '0303',
+    '0330',
+    '0333',
+
+    '0404',
+    '0440',
+    '0444',
+
+    '0505',
+    '0550',
+    '0555',
+
+    '0606',
+    '0660',
+    '0666',
+
+    '0707',
+    '0770',
+    '0777',
+
+    '0808',
+    '0880',
+    '0888',
+
+    '0909',
+    '0990',
+    '0999',
+
+    '1001',
+    '1010',
+    '1011',
+    '1012',
+    '1013',
+    '1014',
+    '1015',
+    '1016',
+    '1017',
+    '1018',
+    '1019',
+
+    '1100',
+    '1101',
+    '1102',
+    '1103',
+    '1104',
+    '1105',
+    '1106',
+    '1107',
+    '1108',
+    '1109',
+    '1110',
+    '1111',
+    '1112',
+    '1113',
+    '1114',
+    '1115',
+    '1116',
+    '1117',
+    '1118',
+    '1119',
+    '1121',
+    '1122',
+    '1133',
+    '1144',
+    '1155',
+    '1166',
+    '1177',
+    '1188',
+    '1199',
+
+    '1201',
+    '1210',
+    '1211',
+    '1212',
+    '1213',
+    '1214',
+    '1215',
+    '1216',
+    '1217',
+    '1218',
+    '1219',
+    '1221',
+    '1222',
+    '1231',
+
+    '1313',
+    '1331',
+
+    '1414',
+    '1441',
+
+    '1515',
+    '1551',
+
+    '1616',
+    '1661',
+
+    '1717',
+    '1771',
+
+    '1818',
+    '1881',
+
+    '1919',
+    '1991',
+
+    '2002',
+    '2020',
+    '2021',
+    '2022',
+    '2023',
+    '2024',
+    '2025',
+    '2026',
+    '2027',
+    '2028',
+    '2029',
+
+    '2111',
+    '2121',
+
+    '2200',
+    '2202',
+    '2211',
+    '2220',
+    '2221',
+    '2222',
+    '2223',
+    '2224',
+    '2225',
+    '2226',
+    '2227',
+    '2228',
+    '2229',
+    '2233',
+    '2244',
+    '2255',
+    '2266',
+    '2277',
+    '2288',
+    '2299',
+
+    '2302',
+    '2323',
+    '2332',
+
+    '2402',
+    '2424',
+    '2442',
+
+    '2502',
+    '2525',
+    '2552',
+
+    '2602',
+    '2626',
+    '2662',
+
+    '2702',
+    '2727',
+    '2772',
+
+    '2802',
+    '2828',
+    '2882',
+
+    '2902',
+    '2929',
+    '2992',
+
+    '3003',
+    '3030',
+    '3033',
+
+    '3111',
+    '3131',
+
+    '3223',
+
+    '3300',
+    '3303',
+    '3311',
+    '3322',
+    '3330',
+    '3331',
+    '3332',
+    '3333',
+    '3334',
+    '3335',
+    '3336',
+    '3337',
+    '3338',
+    '3339',
+    '3344',
+    '3355',
+    '3366',
+    '3377',
+    '3388',
+    '3399',
+
+    '3434',
+    '3443',
+
+    '3535',
+    '3553',
+
+    '3636',
+    '3663',
+
+    '3737',
+    '3773',
+
+    '3838',
+    '3883',
+
+    '3939',
+    '3993',
+
+    '4004',
+    '4040',
+    '4044',
+
+    '4111',
+    '4141',
+
+    '4224',
+
+    '4334',
+
+    '4400',
+    '4404',
+    '4411',
+    '4422',
+    '4433',
+    '4440',
+    '4441',
+    '4442',
+    '4443',
+    '4444',
+    '4445',
+    '4446',
+    '4447',
+    '4448',
+    '4449',
+    '4455',
+    '4466',
+    '4477',
+    '4488',
+    '4499',
+
+    '4545',
+    '4554',
+
+    '4646',
+    '4664',
+
+    '4747',
+    '4774',
+
+    '4848',
+    '4884',
+
+    '4949',
+    '4994',
+
+    '5005',
+    '5050',
+    '5055',
+
+    '5111',
+    '5151',
+
+    '5225',
+
+    '5335',
+
+    '5445',
+
+    '5500',
+    '5505',
+    '5511',
+    '5522',
+    '5533',
+    '5544',
+    '5550',
+    '5551',
+    '5552',
+    '5553',
+    '5554',
+    '5555',
+    '5556',
+    '5557',
+    '5558',
+    '5559',
+    '5566',
+    '5577',
+    '5588',
+    '5599',
+
+    '5656',
+    '5665',
+
+    '5757',
+    '5775',
+
+    '5858',
+    '5885',
+
+    '5959',
+    '5995',
+
+    '6006',
+    '6060',
+    '6066',
+
+    '6111',
+    '6161',
+
+    '6226',
+
+    '6336',
+
+    '6446',
+
+    '6506',
+
+    '6556',
+
+    '6600',
+    '6606',
+    '6611',
+    '6622',
+    '6633',
+    '6644',
+    '6655',
+    '6660',
+    '6661',
+    '6662',
+    '6663',
+    '6664',
+    '6665',
+    '6666',
+    '6667',
+    '6668',
+    '6669',
+    '6677',
+    '6688',
+    '6699',
+
+    '6767',
+    '6776',
+
+    '6868',
+    '6886',
+
+    '6969',
+    '6996',
+
+    '7007',
+    '7070',
+    '7077',
+
+    '7111',
+    '7171',
+
+    '7227',
+
+    '7337',
+
+    '7447',
+
+    '7557',
+
+    '7667',
+
+    '7700',
+    '7707',
+    '7711',
+    '7722',
+    '7733',
+    '7744',
+    '7755',
+    '7766',
+    '7770',
+    '7771',
+    '7772',
+    '7773',
+    '7774',
+    '7775',
+    '7776',
+    '7777',
+    '7778',
+    '7779',
+    '7788',
+    '7799',
+
+    '7878',
+    '7887',
+
+    '7979',
+    '7997',
+
+    '8008',
+    '8080',
+    '8088',
+
+    '8111',
+    '8181',
+
+    '8228',
+
+    '8338',
+
+    '8448',
+
+    '8558',
+
+    '8668',
+
+    '8778',
+
+    '8800',
+    '8808',
+    '8811',
+    '8822',
+    '8833',
+    '8844',
+    '8855',
+    '8866',
+    '8877',
+    '8880',
+    '8881',
+    '8882',
+    '8883',
+    '8884',
+    '8885',
+    '8886',
+    '8887',
+    '8888',
+    '8889',
+    '8899',
+
+    '8989',
+    '8998',
+
+    '9009',
+    '9090',
+    '9099',
+
+    '9111',
+    '9191',
+
+    '9229',
+
+    '9339',
+
+    '9449',
+
+    '9559',
+
+    '9669',
+
+    '9779',
+
+    '9889',
+
+    '9900',
+    '9909',
+    '9911',
+    '9922',
+    '9933',
+    '9944',
+    '9955',
+    '9966',
+    '9977',
+    '9988',
+    '9990',
+    '9991',
+    '9992',
+    '9993',
+    '9994',
+    '9995',
+    '9996',
+    '9997',
+    '9998',
+    '9999',
+  ];
+}
+
+// 使用
+// const patternPins = generatePatternPins(500);
+// console.log(patternPins);
+
+const highProbabilityPins = generatePatternPins1();
+
+// 去重
+const uniqueHighProbabilityPins = [...new Set(highProbabilityPins)];
+
+/**
+ * 已经尝试过的密码：
+ * 1.日期 0101到1231
+ * 2. 1900到2056
+ * 3. 9800～9899，9900～9999
+ *
+ *
+ *
+ */
+const GENERATED_KEY = 'generatedPins';
+const IMPORTED_KEY = 'importedPins';
+
+let generatedPins = JSON.parse(localStorage.getItem(GENERATED_KEY) || '[]');
+
+let importedPins = new Set(
+  JSON.parse(localStorage.getItem(IMPORTED_KEY) || '[]'),
+);
+
+let currentIndex = generatedPins.length - 1;
+
+const pinEl = document.getElementById('pin');
+const countEl = document.getElementById('count');
+const historyEl = document.getElementById('history');
+const batchInput = document.getElementById('batchInput');
+
+function save() {
+  localStorage.setItem(GENERATED_KEY, JSON.stringify(generatedPins));
+
+  localStorage.setItem(IMPORTED_KEY, JSON.stringify([...importedPins]));
+}
+
+function getAllTestedSet() {
+  return new Set([...generatedPins, ...importedPins]);
+}
+
+function updateCount() {
+  const total = getAllTestedSet().size;
+
+  countEl.innerText = `总已尝试: ${total} / 10000
+随机生成: ${generatedPins.length}
+手动导入: ${importedPins.size}`;
+}
+
+function updateHistory() {
+  historyEl.innerHTML = generatedPins
+    .slice()
+    .reverse()
+    .map((v, i) => {
+      const realIndex = generatedPins.length - 1 - i;
+
+      const mark = realIndex === currentIndex ? '👉 ' : '';
+
+      return `<div>${mark}${v}</div>`;
+    })
+    .join('');
+}
+
+function showCurrent() {
+  if (currentIndex >= 0 && currentIndex < generatedPins.length) {
+    pinEl.innerText = generatedPins[currentIndex];
+  }
+
+  updateHistory();
+  updateCount();
+}
+
+function generateNextPin() {
+  const tested = getAllTestedSet();
+
+  // 1. 优先从高概率 PIN 中找
+
+  const remainHighPins = uniqueHighProbabilityPins.filter(
+    (pin) => !tested.has(pin),
+  );
+
+  // 如果还有高概率 PIN
+  if (remainHighPins.length > 0) {
+    const pin = remainHighPins[0];
+
+    generatedPins.push(pin);
+
+    currentIndex = generatedPins.length - 1;
+
+    save();
+
+    showCurrent();
+
+    return;
+  }
+
+  // 2. 高概率 PIN 全部试完
+  // 再随机生成
+
+  if (tested.size >= 10000) {
+    pinEl.innerText = 'DONE';
+
+    return;
+  }
+
+  let pin;
+
+  do {
+    pin = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0');
+  } while (tested.has(pin));
+
+  generatedPins.push(pin);
+
+  currentIndex = generatedPins.length - 1;
+
+  save();
+
+  showCurrent();
+}
+
+function generateNextPin1() {
+  const tested = getAllTestedSet();
+
+  if (tested.size >= 10000) {
+    pinEl.innerText = 'DONE';
+    return;
+  }
+
+  let pin;
+
+  do {
+    pin = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0');
+  } while (tested.has(pin));
+
+  generatedPins.push(pin);
+
+  currentIndex = generatedPins.length - 1;
+
+  save();
+
+  showCurrent();
+}
+
+function prevPin() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    showCurrent();
+  }
+}
+
+function nextPin() {
+  if (currentIndex < generatedPins.length - 1) {
+    currentIndex++;
+    showCurrent();
+  } else {
+    generateNextPin();
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    nextPin();
+  }
+});
+
+document.getElementById('prevBtn').addEventListener('click', prevPin);
+
+document.getElementById('nextBtn').addEventListener('click', nextPin);
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  const lines = batchInput.value
+    .split('\n')
+    .map((v) => v.trim())
+    .filter((v) => /^\d{4}$/.test(v));
+
+  let added = 0;
+
+  lines.forEach((v) => {
+    if (!importedPins.has(v) && !generatedPins.includes(v)) {
+      importedPins.add(v);
+      added++;
+    }
+  });
+
+  save();
+
+  updateCount();
+
+  alert(`导入成功: ${added} 个`);
+
+  batchInput.value = '';
+});
+
+if (generatedPins.length === 0) {
+  generateNextPin();
+} else {
+  showCurrent();
+}
+
+  </script>
+</body>
+</html>
